@@ -45,21 +45,32 @@ export function TemplateEditor() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const stageRef = useRef<HTMLDivElement | null>(null)
   const imagePickerRef = useRef<HTMLInputElement | null>(null)
+  const moveableRef = useRef<InstanceType<typeof Moveable> | null>(null)
+  const rafRef = useRef<number | null>(null)
 
   const selected = useMemo(
     () => (selectedId ? (template.elements.find((e) => e.id === selectedId) ?? null) : null),
     [template.elements, selectedId],
   )
 
-  const scale = 4.0 // editor scale for comfortable editing
+  const scale = 2.0 // editor scale for comfortable editing
   const stageWidth = mmToPx(template.widthMm, scale)
   const stageHeight = mmToPx(template.heightMm, scale)
 
   const locked = selected ? Boolean(selected.locked) : false
 
+  const scheduleMoveableUpdate = () => {
+    if (!moveableRef.current) return
+    if (rafRef.current != null) return
+    rafRef.current = window.requestAnimationFrame(() => {
+      rafRef.current = null
+      moveableRef.current?.updateRect()
+    })
+  }
+
   return (
-    <div className="grid gap-3 md:grid-cols-[280px_1fr_320px]">
-      <Card className="p-3">
+    <div className="grid gap-3 md:h-full md:min-h-0 md:grid-cols-[280px_1fr_320px]">
+      <Card className="p-3 md:flex md:h-full md:min-h-0 md:flex-col">
         <div className="flex items-center justify-between gap-2">
           <div>
             <div className="text-sm font-medium">Layers</div>
@@ -157,7 +168,7 @@ export function TemplateEditor() {
 
         <Separator className="my-3" />
 
-        <ScrollArea className="h-[70svh]">
+        <ScrollArea className="max-h-[55svh] md:max-h-none md:min-h-0 md:flex-1">
           <div className="grid gap-1">
             {template.elements.map((el) => {
               const active = el.id === selectedId
@@ -200,13 +211,13 @@ export function TemplateEditor() {
         </div>
       </Card>
 
-      <Card className="p-3">
+      <Card className="p-3 md:flex md:h-full md:min-h-0 md:flex-col">
         <div className="text-sm font-medium">Canvas</div>
         <div className="text-xs text-muted-foreground">
           Drag to position, resize handles to adjust.
         </div>
 
-        <div className="mt-3 flex justify-center overflow-auto">
+        <div className="mt-3 flex min-h-0 flex-1 justify-center overflow-auto rounded-md bg-muted/20 p-4">
           <div
             ref={stageRef}
             className="relative rounded-md bg-white shadow-sm"
@@ -239,46 +250,51 @@ export function TemplateEditor() {
                   el={el}
                   scale={scale}
                   selected={el.id === selectedId}
-                  onSelect={() => setSelectedId(el.id)}
+                  onSelect={() => {
+                    setSelectedId(el.id)
+                    scheduleMoveableUpdate()
+                  }}
                 />
               ))}
+
+            {selected && selected.type !== "line" ? (
+              <Moveable
+                ref={moveableRef}
+                target={`[data-el-id="${selected.id}"]`}
+                origin={false}
+                draggable={!locked}
+                resizable={!locked}
+                snappable
+                snapThreshold={5}
+                bounds={{
+                  left: 0,
+                  top: 0,
+                  right: stageWidth,
+                  bottom: stageHeight,
+                }}
+                onDrag={({ left, top }) => {
+                  updateTemplateElement(selected.id, {
+                    xMm: pxToMm(left, scale),
+                    yMm: pxToMm(top, scale),
+                  })
+                }}
+                onResize={({ width, height, drag }) => {
+                  updateTemplateElement(selected.id, {
+                    wMm: pxToMm(width, scale),
+                    hMm: pxToMm(height, scale),
+                    xMm: pxToMm(drag.left, scale),
+                    yMm: pxToMm(drag.top, scale),
+                  })
+                }}
+                onDragEnd={scheduleMoveableUpdate}
+                onResizeEnd={scheduleMoveableUpdate}
+              />
+            ) : null}
           </div>
         </div>
-
-        {selected && selected.type !== "line" ? (
-          <Moveable
-            target={`[data-el-id="${selected.id}"]`}
-            origin={false}
-            draggable={!locked}
-            resizable={!locked}
-            snappable
-            snapCenter
-            snapThreshold={5}
-            bounds={{
-              left: 0,
-              top: 0,
-              right: stageWidth,
-              bottom: stageHeight,
-            }}
-            onDrag={({ left, top }) => {
-              updateTemplateElement(selected.id, {
-                xMm: pxToMm(left, scale),
-                yMm: pxToMm(top, scale),
-              })
-            }}
-            onResize={({ width, height, drag }) => {
-              updateTemplateElement(selected.id, {
-                wMm: pxToMm(width, scale),
-                hMm: pxToMm(height, scale),
-                xMm: pxToMm(drag.left, scale),
-                yMm: pxToMm(drag.top, scale),
-              })
-            }}
-          />
-        ) : null}
       </Card>
 
-      <Card className="p-3">
+      <Card className="p-3 md:flex md:h-full md:min-h-0 md:flex-col">
         <div className="text-sm font-medium">Inspector</div>
         <div className="text-xs text-muted-foreground">
           {selected ? `${selected.name} • ${selected.type}` : "Select an element"}
@@ -286,155 +302,161 @@ export function TemplateEditor() {
 
         <Separator className="my-3" />
 
-        {!selected ? (
-          <div className="text-xs text-muted-foreground">
-            Click an element to edit its properties.
-          </div>
-        ) : selected.type === "line" ? (
-          <div className="text-xs text-muted-foreground">
-            Line elements are currently locked in the editor.
-          </div>
-        ) : (
-          <div className="grid gap-4">
-            <div className="grid grid-cols-2 gap-3">
-              <Field
-                label="X (mm)"
-                value={"xMm" in selected ? selected.xMm : 0}
-                onChange={(v) => updateTemplateElement(selected.id, { xMm: v })}
-              />
-              <Field
-                label="Y (mm)"
-                value={"yMm" in selected ? selected.yMm : 0}
-                onChange={(v) => updateTemplateElement(selected.id, { yMm: v })}
-              />
-              {"wMm" in selected ? (
-                <Field
-                  label="W (mm)"
-                  value={selected.wMm}
-                  onChange={(v) => updateTemplateElement(selected.id, { wMm: v })}
-                />
-              ) : null}
-              {"hMm" in selected ? (
-                <Field
-                  label="H (mm)"
-                  value={selected.hMm}
-                  onChange={(v) => updateTemplateElement(selected.id, { hMm: v })}
-                />
-              ) : null}
-            </div>
-
-            {selected.type === "text" ? (
-              <>
-                <div className="grid gap-2">
-                  <Label>Text</Label>
-                  <Textarea
-                    value={selected.text}
-                    rows={4}
-                    onChange={(e) => updateTemplateElement(selected.id, { text: e.target.value })}
-                  />
-                  <div className="flex flex-wrap gap-2">
-                    {DEFAULT_TOKENS.map((t) => (
-                      <Button
-                        key={t.key}
-                        size="sm"
-                        variant="secondary"
-                        onClick={() =>
-                          updateTemplateElement(selected.id, {
-                            text: `${selected.text} {{${t.key}}}`,
-                          })
-                        }
-                      >
-                        {t.label}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-
+        <ScrollArea className="max-h-[55svh] md:max-h-none md:min-h-0 md:flex-1">
+          <div className="pr-3">
+            {!selected ? (
+              <div className="text-xs text-muted-foreground">
+                Click an element to edit its properties.
+              </div>
+            ) : selected.type === "line" ? (
+              <div className="text-xs text-muted-foreground">
+                Line elements are currently locked in the editor.
+              </div>
+            ) : (
+              <div className="grid gap-4">
                 <div className="grid grid-cols-2 gap-3">
                   <Field
-                    label="Font (mm)"
-                    value={selected.fontSizeMm}
-                    onChange={(v) => updateTemplateElement(selected.id, { fontSizeMm: v })}
+                    label="X (mm)"
+                    value={"xMm" in selected ? selected.xMm : 0}
+                    onChange={(v) => updateTemplateElement(selected.id, { xMm: v })}
                   />
-                  <TextField
-                    label="Color"
-                    value={selected.color ?? "#111111"}
-                    onChange={(v) => updateTemplateElement(selected.id, { color: v })}
+                  <Field
+                    label="Y (mm)"
+                    value={"yMm" in selected ? selected.yMm : 0}
+                    onChange={(v) => updateTemplateElement(selected.id, { yMm: v })}
                   />
+                  {"wMm" in selected ? (
+                    <Field
+                      label="W (mm)"
+                      value={selected.wMm}
+                      onChange={(v) => updateTemplateElement(selected.id, { wMm: v })}
+                    />
+                  ) : null}
+                  {"hMm" in selected ? (
+                    <Field
+                      label="H (mm)"
+                      value={selected.hMm}
+                      onChange={(v) => updateTemplateElement(selected.id, { hMm: v })}
+                    />
+                  ) : null}
                 </div>
-              </>
-            ) : null}
 
-            {selected.type === "rect" ? (
-              <div className="grid grid-cols-2 gap-3">
-                <TextField
-                  label="Fill"
-                  value={selected.fill ?? "transparent"}
-                  onChange={(v) => updateTemplateElement(selected.id, { fill: v })}
-                />
-                <TextField
-                  label="Stroke"
-                  value={selected.stroke ?? "transparent"}
-                  onChange={(v) => updateTemplateElement(selected.id, { stroke: v })}
-                />
-              </div>
-            ) : null}
+                {selected.type === "text" ? (
+                  <>
+                    <div className="grid gap-2">
+                      <Label>Text</Label>
+                      <Textarea
+                        value={selected.text}
+                        rows={4}
+                        onChange={(e) =>
+                          updateTemplateElement(selected.id, { text: e.target.value })
+                        }
+                      />
+                      <div className="flex flex-wrap gap-2">
+                        {DEFAULT_TOKENS.map((t) => (
+                          <Button
+                            key={t.key}
+                            size="sm"
+                            variant="secondary"
+                            onClick={() =>
+                              updateTemplateElement(selected.id, {
+                                text: `${selected.text} {{${t.key}}}`,
+                              })
+                            }
+                          >
+                            {t.label}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
 
-            {selected.type === "triangle" ? (
-              <div className="grid grid-cols-2 gap-3">
-                <TextField
-                  label="Fill"
-                  value={selected.fill ?? "transparent"}
-                  onChange={(v) => updateTemplateElement(selected.id, { fill: v })}
-                />
-                <TextField
-                  label="Corner"
-                  value={selected.corner}
-                  onChange={(v) => {
-                    if (v === "br" || v === "bl" || v === "tr" || v === "tl") {
-                      updateTemplateElement(selected.id, { corner: v })
-                    }
-                  }}
-                />
-              </div>
-            ) : null}
+                    <div className="grid grid-cols-2 gap-3">
+                      <Field
+                        label="Font (mm)"
+                        value={selected.fontSizeMm}
+                        onChange={(v) => updateTemplateElement(selected.id, { fontSizeMm: v })}
+                      />
+                      <TextField
+                        label="Color"
+                        value={selected.color ?? "#111111"}
+                        onChange={(v) => updateTemplateElement(selected.id, { color: v })}
+                      />
+                    </div>
+                  </>
+                ) : null}
 
-            {selected.type === "image" ? (
-              <div className="grid gap-2">
-                <Label>Source</Label>
-                <Input
-                  value={selected.src}
-                  onChange={(e) => updateTemplateElement(selected.id, { src: e.target.value })}
-                />
-                <div className="text-xs text-muted-foreground">
-                  Tip: use a small logo (or paste a URL). Data URLs are stored in local storage.
+                {selected.type === "rect" ? (
+                  <div className="grid grid-cols-2 gap-3">
+                    <TextField
+                      label="Fill"
+                      value={selected.fill ?? "transparent"}
+                      onChange={(v) => updateTemplateElement(selected.id, { fill: v })}
+                    />
+                    <TextField
+                      label="Stroke"
+                      value={selected.stroke ?? "transparent"}
+                      onChange={(v) => updateTemplateElement(selected.id, { stroke: v })}
+                    />
+                  </div>
+                ) : null}
+
+                {selected.type === "triangle" ? (
+                  <div className="grid grid-cols-2 gap-3">
+                    <TextField
+                      label="Fill"
+                      value={selected.fill ?? "transparent"}
+                      onChange={(v) => updateTemplateElement(selected.id, { fill: v })}
+                    />
+                    <TextField
+                      label="Corner"
+                      value={selected.corner}
+                      onChange={(v) => {
+                        if (v === "br" || v === "bl" || v === "tr" || v === "tl") {
+                          updateTemplateElement(selected.id, { corner: v })
+                        }
+                      }}
+                    />
+                  </div>
+                ) : null}
+
+                {selected.type === "image" ? (
+                  <div className="grid gap-2">
+                    <Label>Source</Label>
+                    <Input
+                      value={selected.src}
+                      onChange={(e) => updateTemplateElement(selected.id, { src: e.target.value })}
+                    />
+                    <div className="text-xs text-muted-foreground">
+                      Tip: use a small logo (or paste a URL). Data URLs are stored in local storage.
+                    </div>
+                  </div>
+                ) : null}
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Label className="text-xs">Hidden</Label>
+                    <Switch
+                      checked={Boolean(selected.hidden)}
+                      onCheckedChange={(v) => updateTemplateElement(selected.id, { hidden: v })}
+                    />
+                  </div>
+
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => {
+                      removeTemplateElement(selected.id)
+                      setSelectedId(null)
+                    }}
+                    disabled={Boolean(selected.locked)}
+                  >
+                    Remove
+                  </Button>
                 </div>
               </div>
-            ) : null}
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Label className="text-xs">Hidden</Label>
-                <Switch
-                  checked={Boolean(selected.hidden)}
-                  onCheckedChange={(v) => updateTemplateElement(selected.id, { hidden: v })}
-                />
-              </div>
-
-              <Button
-                size="sm"
-                variant="destructive"
-                onClick={() => {
-                  removeTemplateElement(selected.id)
-                  setSelectedId(null)
-                }}
-                disabled={Boolean(selected.locked)}
-              >
-                Remove
-              </Button>
-            </div>
+            )}
           </div>
-        )}
+        </ScrollArea>
       </Card>
     </div>
   )
@@ -505,7 +527,7 @@ function EditorElement(props: {
               ? `${strokeW}px solid ${el.stroke}`
               : undefined,
           boxSizing: "border-box",
-          outline: selected ? "2px solid rgba(59,130,246,0.7)" : undefined,
+          outline: selected ? undefined : "1px dashed rgba(17,17,17,0.25)",
           outlineOffset: 1,
           cursor: el.locked ? "default" : "move",
         }}
@@ -527,7 +549,7 @@ function EditorElement(props: {
           ...baseStyle,
           background: el.fill ?? "transparent",
           clipPath: CLIP_BY_CORNER[el.corner],
-          outline: selected ? "2px solid rgba(59,130,246,0.7)" : undefined,
+          outline: selected ? undefined : "1px dashed rgba(17,17,17,0.25)",
           outlineOffset: 1,
           cursor: el.locked ? "default" : "move",
         }}
@@ -555,7 +577,7 @@ function EditorElement(props: {
           lineHeight: 1.15,
           textAlign: el.align ?? "left",
           writingMode: el.writingMode === "vertical-rl" ? "vertical-rl" : undefined,
-          outline: selected ? "2px solid rgba(59,130,246,0.7)" : "1px dashed rgba(17,17,17,0.25)",
+          outline: selected ? undefined : "1px dashed rgba(17,17,17,0.25)",
           outlineOffset: 1,
           cursor: el.locked ? "default" : "move",
           padding: 0,
@@ -579,7 +601,7 @@ function EditorElement(props: {
         style={{
           ...baseStyle,
           objectFit: el.fit ?? "cover",
-          outline: selected ? "2px solid rgba(59,130,246,0.7)" : "1px dashed rgba(17,17,17,0.25)",
+          outline: selected ? undefined : "1px dashed rgba(17,17,17,0.25)",
           outlineOffset: 1,
           cursor: el.locked ? "default" : "move",
         }}
