@@ -3,9 +3,9 @@ import { persist } from "zustand/middleware"
 import { immer } from "zustand/middleware/immer"
 
 import { applyMapping, readXlsxToTable, suggestMapping } from "@/lib/import-xlsx"
-import { DEFAULT_TEMPLATE } from "@/lib/default-template"
+import { DEFAULT_SVG_TEMPLATE } from "@/lib/default-template-svg"
 import type { ColumnMapping, ImportTable, TicketData } from "@/lib/ticket-types"
-import type { TicketTemplate } from "@/lib/template-types"
+import type { SvgTicketTemplate } from "@/lib/template-types"
 
 export type Export14DayMode = "auto" | "weekdays" | "all-days"
 
@@ -25,7 +25,7 @@ type StudioState = {
   filter: TicketFilter
   search: string
 
-  template: TicketTemplate
+  template: SvgTicketTemplate
 
   previewFlipped: boolean
   showTemplateReference: boolean
@@ -44,11 +44,9 @@ type StudioState = {
     setExport14DayMode: (mode: Export14DayMode) => void
     updateMapping: (mapping: ColumnMapping) => void
 
-    setTemplate: (template: TicketTemplate) => void
+    setTemplate: (template: SvgTicketTemplate) => void
     resetTemplate: () => void
-    updateTemplateElement: (id: string, patch: Partial<TicketTemplate["elements"][number]>) => void
-    addTemplateElement: (el: TicketTemplate["elements"][number]) => void
-    removeTemplateElement: (id: string) => void
+    updateTemplateSvg: (svg: string) => void
 
     setPreviewFlipped: (v: boolean) => void
     setShowTemplateReference: (v: boolean) => void
@@ -67,7 +65,7 @@ export const useStudioStore = create<StudioState>()(
       filter: {},
       search: "",
 
-      template: DEFAULT_TEMPLATE,
+      template: DEFAULT_SVG_TEMPLATE,
 
       previewFlipped: false,
       showTemplateReference: false,
@@ -167,27 +165,13 @@ export const useStudioStore = create<StudioState>()(
 
         resetTemplate: () => {
           set((s) => {
-            s.template = DEFAULT_TEMPLATE
+            s.template = DEFAULT_SVG_TEMPLATE
           })
         },
 
-        updateTemplateElement: (id, patch) => {
+        updateTemplateSvg: (svg) => {
           set((s) => {
-            const el = s.template.elements.find((e) => e.id === id)
-            if (!el || el.locked) return
-            Object.assign(el, patch)
-          })
-        },
-
-        addTemplateElement: (el) => {
-          set((s) => {
-            s.template.elements.push(el)
-          })
-        },
-
-        removeTemplateElement: (id) => {
-          set((s) => {
-            s.template.elements = s.template.elements.filter((e) => e.id !== id)
+            s.template.svg = svg
           })
         },
 
@@ -205,7 +189,7 @@ export const useStudioStore = create<StudioState>()(
       },
     })),
     {
-      name: "ticket-studio",
+      name: "ticket-studio-v2", // New key - clean cut from old storage
       partialize: (s) => ({
         template: s.template,
         export14DayMode: s.export14DayMode,

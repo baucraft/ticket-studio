@@ -81,6 +81,18 @@ export type TicketTemplate = {
   elements: TemplateElement[]
 }
 
+/**
+ * SVG-based ticket template.
+ * The SVG string can contain Mustache placeholders like {{taskName}}.
+ */
+export type SvgTicketTemplate = {
+  id: string
+  name: string
+  widthMm: number
+  heightMm: number
+  svg: string
+}
+
 export type TemplateToken = {
   key: string
   label: string

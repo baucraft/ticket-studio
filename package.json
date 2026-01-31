@@ -39,6 +39,7 @@
     "react-dom": "^19.2.4",
     "react-dropzone": "^14.4.0",
     "react-moveable": "^0.56.0",
+    "svgedit": "^7.4.1",
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.18",
     "zustand": "^5.0.10"
