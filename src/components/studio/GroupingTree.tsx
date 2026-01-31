@@ -100,7 +100,7 @@ export function GroupingTree() {
     (filter.taskId ?? filter.trade ?? filter.company) ? JSON.stringify(filter) : ""
 
   return (
-    <div className="rounded-lg border bg-card">
+    <div className="flex h-full min-h-0 flex-col rounded-lg border bg-card">
       <div className="flex items-center justify-between gap-2 p-3">
         <div className="flex items-center gap-2">
           <Layers className="size-4 text-muted-foreground" />
@@ -119,7 +119,7 @@ export function GroupingTree() {
       </div>
       <Separator />
 
-      <ScrollArea className="h-[38svh]">
+      <ScrollArea className="min-h-0 flex-1">
         <div className="p-2">
           {tree.length === 0 ? (
             <div className="px-2 py-6 text-xs text-muted-foreground">Import to see groups.</div>

@@ -9,8 +9,8 @@ import { ExportButton } from "@/components/studio/ExportButton"
 
 export function StudioView() {
   return (
-    <div className="grid gap-3 md:grid-cols-[320px_1fr_420px]">
-      <div className="grid gap-3">
+    <div className="grid gap-3 md:grid-cols-[320px_1fr_420px] md:h-full md:min-h-0">
+      <div className="flex flex-col gap-3 md:min-h-0">
         <ImportCard />
 
         <Card className="p-3">
@@ -27,14 +27,16 @@ export function StudioView() {
           </div>
         </Card>
 
-        <GroupingTree />
+        <div className="min-h-0 flex-1">
+          <GroupingTree />
+        </div>
       </div>
 
-      <div className="min-h-[60svh]">
+      <div className="min-h-[60svh] md:h-full md:min-h-0">
         <TicketList />
       </div>
 
-      <div className="min-h-[60svh]">
+      <div className="min-h-[60svh] md:h-full md:min-h-0">
         <TicketPreview />
       </div>
     </div>
