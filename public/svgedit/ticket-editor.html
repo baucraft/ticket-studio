@@ -61,6 +61,24 @@
       if (type === "loadSvg") {
         try {
           await svgEditor.loadFromString(payload.svg)
+          // Zoom to fit content after loading
+          setTimeout(() => {
+            try {
+              const workarea = document.getElementById("workarea")
+              if (workarea) {
+                const result = svgEditor.svgCanvas.setBBoxZoom(
+                  "content",
+                  workarea.clientWidth - 40,
+                  workarea.clientHeight - 40,
+                )
+                if (result) {
+                  svgEditor.updateCanvas(true)
+                }
+              }
+            } catch (e) {
+              console.warn("Could not zoom to fit:", e)
+            }
+          }, 200)
           window.parent.postMessage({ type: "svgLoaded" }, "*")
         } catch (err) {
           console.error("Failed to load SVG:", err)
