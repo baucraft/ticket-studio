@@ -559,6 +559,8 @@ function EditorElement(props: {
 
   if (el.type === "text") {
     const fontSizePx = mmToPx(el.fontSizeMm, scale)
+    const content = el.text
+    const shouldFlipVertical = el.id === "strip-text" && el.writingMode === "vertical-rl"
     return (
       <div
         data-el-id={el.id}
@@ -583,7 +585,16 @@ function EditorElement(props: {
           padding: 0,
         }}
       >
-        {el.text}
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            transform: shouldFlipVertical ? "rotate(180deg)" : undefined,
+            transformOrigin: "center",
+          }}
+        >
+          {content}
+        </div>
       </div>
     )
   }

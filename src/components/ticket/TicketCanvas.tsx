@@ -190,6 +190,7 @@ export function TicketCanvas({
             const align = el.align ?? "left"
             const valign = el.valign ?? "top"
             const content = renderElementText(el.text, ticket)
+            const shouldFlipVertical = el.id === "strip-text" && el.writingMode === "vertical-rl"
 
             const justifyContent =
               valign === "top" ? "flex-start" : valign === "middle" ? "center" : "flex-end"
@@ -218,7 +219,16 @@ export function TicketCanvas({
                   userSelect: "none",
                 }}
               >
-                <div style={{ width: "100%" }}>{content}</div>
+                <div
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    transform: shouldFlipVertical ? "rotate(180deg)" : undefined,
+                    transformOrigin: "center",
+                  }}
+                >
+                  {content}
+                </div>
               </div>
             )
           }

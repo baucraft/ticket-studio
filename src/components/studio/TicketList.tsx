@@ -47,7 +47,7 @@ export function TicketList() {
   const rowVirtualizer = useVirtualizer({
     count: filtered.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 64,
+    estimateSize: () => 55,
     overscan: 14,
     useFlushSync: false,
   })
@@ -98,7 +98,7 @@ export function TicketList() {
                     ) : null}
                   </div>
 
-                  <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                     <span className="inline-flex items-center gap-1">
                       <Hash className="size-3" />
                       {t.taskId}

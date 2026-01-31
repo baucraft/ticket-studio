@@ -116,39 +116,81 @@ function drawElement(params: {
     const yPts0 = yTopLeftToPdfBottom(el.yMm, el.hMm)
 
     const color = safeColor(el.color) ?? rgb(0.07, 0.07, 0.07)
-    const rotate = degrees(el.rotateDeg ?? 0)
     const align = el.align ?? "left"
     const valign = el.valign ?? "top"
+    const isVertical = el.writingMode === "vertical-rl"
+    const shouldFlipVertical = isVertical && el.id === "strip-text"
+
+    // For vertical text, we rotate -90 degrees and swap width/height for layout calculations
+    const rotateDeg = (el.rotateDeg ?? 0) + (isVertical ? -90 : 0) + (shouldFlipVertical ? 180 : 0)
+    const rotate = degrees(rotateDeg)
+    const layoutH = isVertical ? wPts : hPts
 
     const lines = text.split(/\r?\n/)
     const lineHeight = fontSize * 1.15
-    const blockHeight = Math.min(hPts, lineHeight * lines.length)
-
-    const startY =
-      valign === "top"
-        ? yPts0 + hPts - fontSize
-        : valign === "middle"
-          ? yPts0 + (hPts + blockHeight) / 2 - fontSize
-          : yPts0 + blockHeight - fontSize
+    const blockHeight = Math.min(layoutH, lineHeight * lines.length)
 
     lines.forEach((line: string, idx: number) => {
-      const y = startY - idx * lineHeight
       const textWidth = font.widthOfTextAtSize(line, fontSize)
-      const x =
-        align === "left"
-          ? xPts0
-          : align === "center"
-            ? xPts0 + (wPts - textWidth) / 2
-            : xPts0 + (wPts - textWidth)
 
-      page.drawText(line, {
-        x,
-        y,
-        size: fontSize,
-        font,
-        color,
-        rotate,
-      })
+      if (isVertical) {
+        // For vertical-rl: text rotated -90deg, drawn from right side, flowing left
+        // In vertical mode, "align" controls vertical position, "valign" controls horizontal
+        const lineX =
+          valign === "top"
+            ? xPts0 + wPts - fontSize - idx * lineHeight
+            : valign === "middle"
+              ? xPts0 + (wPts + blockHeight) / 2 - fontSize - idx * lineHeight
+              : xPts0 + blockHeight - fontSize - idx * lineHeight
+
+        // For vertical text: align controls vertical position
+        // "left" = start at top (high y), "right" = end at bottom (low y)
+        const lineY =
+          align === "left"
+            ? yPts0 + hPts
+            : align === "center"
+              ? yPts0 + (hPts + textWidth) / 2
+              : yPts0 + textWidth
+
+        const centerX = xPts0 + wPts / 2
+        const centerY = yPts0 + hPts / 2
+        const drawX = shouldFlipVertical ? centerX * 2 - lineX : lineX
+        const drawY = shouldFlipVertical ? centerY * 2 - lineY : lineY
+
+        page.drawText(line, {
+          x: drawX,
+          y: drawY,
+          size: fontSize,
+          font,
+          color,
+          rotate,
+        })
+      } else {
+        // Horizontal text (original logic)
+        const startY =
+          valign === "top"
+            ? yPts0 + hPts - fontSize
+            : valign === "middle"
+              ? yPts0 + (hPts + blockHeight) / 2 - fontSize
+              : yPts0 + blockHeight - fontSize
+
+        const y = startY - idx * lineHeight
+        const x =
+          align === "left"
+            ? xPts0
+            : align === "center"
+              ? xPts0 + (wPts - textWidth) / 2
+              : xPts0 + (wPts - textWidth)
+
+        page.drawText(line, {
+          x,
+          y,
+          size: fontSize,
+          font,
+          color,
+          rotate,
+        })
+      }
     })
     return
   }
