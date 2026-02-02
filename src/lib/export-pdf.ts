@@ -3,7 +3,7 @@ import { PDFDocument } from "pdf-lib"
 import type { SvgTicketTemplate } from "@/lib/template-types"
 import type { TicketData } from "@/lib/ticket-types"
 import { renderTemplateString } from "@/lib/render-template"
-import { A4_SIZE_MM, DEFAULT_A4_2X2_LAYOUT_MM, mmToPt } from "@/lib/units"
+import { mmToPt } from "@/lib/units"
 
 /**
  * Renders an SVG template with ticket data to a PNG data URL.
@@ -80,47 +80,24 @@ export async function exportTicketsPdfBytes(params: {
 
   const pdfDoc = await PDFDocument.create()
 
-  const pageWidthPts = mmToPt(A4_SIZE_MM.width)
-  const pageHeightPts = mmToPt(A4_SIZE_MM.height)
+  // Page size = exact ticket dimensions
+  const pageWidthPt = mmToPt(template.widthMm)
+  const pageHeightPt = mmToPt(template.heightMm)
 
-  const layout = DEFAULT_A4_2X2_LAYOUT_MM
-  const perPage = layout.cols * layout.rows
-
-  // Pre-render all tickets to PNG
-  const ticketImages: Uint8Array[] = []
+  // Render each ticket on its own page
   for (const ticket of tickets) {
     const pngBytes = await renderSvgToPng(template, ticket)
-    ticketImages.push(pngBytes)
-  }
+    const pngImage = await pdfDoc.embedPng(pngBytes)
 
-  // Embed images and create pages
-  let page = pdfDoc.addPage([pageWidthPts, pageHeightPts])
+    // Create a page with exact ticket dimensions
+    const page = pdfDoc.addPage([pageWidthPt, pageHeightPt])
 
-  for (let i = 0; i < tickets.length; i += 1) {
-    if (i > 0 && i % perPage === 0) {
-      page = pdfDoc.addPage([pageWidthPts, pageHeightPts])
-    }
-
-    const idx = i % perPage
-    const row = Math.floor(idx / layout.cols)
-    const col = idx % layout.cols
-
-    const originXmm = layout.margin.x + col * (layout.ticket.width + layout.gap.x)
-    const originYTopMm = layout.margin.y + row * (layout.ticket.height + layout.gap.y)
-
-    // Convert to PDF coordinates (origin at bottom-left)
-    const x = mmToPt(originXmm)
-    const y = pageHeightPts - mmToPt(originYTopMm + template.heightMm)
-    const width = mmToPt(template.widthMm)
-    const height = mmToPt(template.heightMm)
-
-    // Embed and draw the image
-    const pngImage = await pdfDoc.embedPng(ticketImages[i])
+    // Draw ticket full-page (no margins)
     page.drawImage(pngImage, {
-      x,
-      y,
-      width,
-      height,
+      x: 0,
+      y: 0,
+      width: pageWidthPt,
+      height: pageHeightPt,
     })
   }
 

@@ -1,13 +1,13 @@
-import { LayoutGrid, PencilRuler } from "lucide-react"
+import { FileCode, LayoutGrid } from "lucide-react"
 import { useState } from "react"
 
 import { StudioView } from "@/components/studio/StudioView"
-import { TemplateEditor } from "@/components/editor/TemplateEditor"
+import { TemplateView } from "@/components/template/TemplateView"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function App() {
-  const [tab, setTab] = useState("studio")
+  const [tab, setTab] = useState("template")
 
   return (
     <div
@@ -22,7 +22,7 @@ export default function App() {
           <div>
             <div className="text-lg font-semibold tracking-tight">Ticket Studio</div>
             <div className="text-xs text-muted-foreground">
-              Import → Preview → Customize template → Export PDF
+              Upload template → Import Excel → Preview → Export PDF
             </div>
           </div>
           <Badge variant="secondary">local-first</Badge>
@@ -30,28 +30,28 @@ export default function App() {
 
         <Tabs value={tab} onValueChange={setTab} className="mt-4 flex min-h-0 flex-1 flex-col">
           <TabsList>
+            <TabsTrigger value="template" className="gap-2">
+              <FileCode className="size-4" />
+              Template
+            </TabsTrigger>
             <TabsTrigger value="studio" className="gap-2">
               <LayoutGrid className="size-4" />
               Studio
             </TabsTrigger>
-            <TabsTrigger value="template" className="gap-2">
-              <PencilRuler className="size-4" />
-              Template
-            </TabsTrigger>
           </TabsList>
+
+          <TabsContent
+            value="template"
+            className="mt-4 min-h-0 flex-1 overflow-auto md:overflow-hidden"
+          >
+            <TemplateView />
+          </TabsContent>
 
           <TabsContent
             value="studio"
             className="mt-4 min-h-0 flex-1 overflow-auto md:overflow-hidden"
           >
             <StudioView />
-          </TabsContent>
-
-          <TabsContent
-            value="template"
-            className="mt-4 min-h-0 flex-1 overflow-auto md:overflow-hidden"
-          >
-            <TemplateEditor />
           </TabsContent>
         </Tabs>
       </div>

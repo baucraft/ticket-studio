@@ -1,11 +1,18 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { immer } from "zustand/middleware/immer"
+import DOMPurify from "dompurify"
 
 import { applyMapping, readXlsxToTable, suggestMapping } from "@/lib/import-xlsx"
 import { DEFAULT_SVG_TEMPLATE } from "@/lib/default-template-svg"
 import type { ColumnMapping, ImportTable, TicketData } from "@/lib/ticket-types"
 import type { SvgTicketTemplate } from "@/lib/template-types"
+
+export type TemplateWarnings = {
+  noMustacheTags: boolean
+  unreasonableDimensions: boolean
+  invalidSvg: boolean
+}
 
 export type Export14DayMode = "auto" | "weekdays" | "all-days"
 
@@ -26,6 +33,7 @@ type StudioState = {
   search: string
 
   template: SvgTicketTemplate
+  templateWarnings: TemplateWarnings | null
 
   previewFlipped: boolean
   showTemplateReference: boolean
@@ -47,6 +55,8 @@ type StudioState = {
     setTemplate: (template: SvgTicketTemplate) => void
     resetTemplate: () => void
     updateTemplateSvg: (svg: string) => void
+    importTemplateSvgFile: (file: File) => Promise<void>
+    clearTemplateWarnings: () => void
 
     setPreviewFlipped: (v: boolean) => void
     setShowTemplateReference: (v: boolean) => void
@@ -66,6 +76,7 @@ export const useStudioStore = create<StudioState>()(
       search: "",
 
       template: DEFAULT_SVG_TEMPLATE,
+      templateWarnings: null,
 
       previewFlipped: false,
       showTemplateReference: false,
@@ -172,6 +183,80 @@ export const useStudioStore = create<StudioState>()(
         updateTemplateSvg: (svg) => {
           set((s) => {
             s.template.svg = svg
+          })
+        },
+
+        importTemplateSvgFile: async (file) => {
+          const text = await file.text()
+
+          // 1. Validate SVG structure
+          const parser = new DOMParser()
+          const doc = parser.parseFromString(text, "image/svg+xml")
+          const svgEl = doc.querySelector("svg")
+          const parseError = doc.querySelector("parsererror")
+
+          if (!svgEl || parseError) {
+            throw new Error("Invalid SVG file - could not parse")
+          }
+
+          // 2. Sanitize SVG with DOMPurify
+          const sanitizedSvg = DOMPurify.sanitize(text, {
+            USE_PROFILES: { svg: true, svgFilters: true },
+            ADD_TAGS: ["use"],
+            ADD_ATTR: ["xlink:href", "href", "viewBox", "preserveAspectRatio"],
+          })
+
+          // 3. Auto-detect dimensions from viewBox or width/height
+          let widthMm = 70.19
+          let heightMm = 123.11
+          const viewBox = svgEl.getAttribute("viewBox")
+
+          if (viewBox) {
+            const parts = viewBox.split(/[\s,]+/).map(Number)
+            if (parts.length === 4 && !isNaN(parts[2]) && !isNaN(parts[3])) {
+              widthMm = parts[2]
+              heightMm = parts[3]
+            }
+          } else {
+            // Try width/height attributes (assume mm if no unit or mm unit)
+            const w = svgEl.getAttribute("width")
+            const h = svgEl.getAttribute("height")
+            if (w && h) {
+              const parsedW = parseFloat(w.replace(/mm$/, ""))
+              const parsedH = parseFloat(h.replace(/mm$/, ""))
+              if (!isNaN(parsedW) && !isNaN(parsedH)) {
+                widthMm = parsedW
+                heightMm = parsedH
+              }
+            }
+          }
+
+          // 4. Check for mustache tags
+          const hasMustacheTags = /\{\{[^}]+\}\}/.test(text)
+
+          // 5. Check reasonable dimensions (10-500mm)
+          const isReasonable = widthMm >= 10 && widthMm <= 500 && heightMm >= 10 && heightMm <= 500
+
+          // 6. Store template and warnings
+          set((s) => {
+            s.template = {
+              id: crypto.randomUUID(),
+              name: file.name.replace(/\.svg$/i, ""),
+              widthMm,
+              heightMm,
+              svg: sanitizedSvg,
+            }
+            s.templateWarnings = {
+              noMustacheTags: !hasMustacheTags,
+              unreasonableDimensions: !isReasonable,
+              invalidSvg: false,
+            }
+          })
+        },
+
+        clearTemplateWarnings: () => {
+          set((s) => {
+            s.templateWarnings = null
           })
         },
 
