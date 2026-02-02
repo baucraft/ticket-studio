@@ -7,6 +7,8 @@ import { defineConfig } from "vite"
 
 // https://vite.dev/config/
 export default defineConfig({
+  // Base path: root for local dev, /ticket-studio/ for GitHub Pages production build
+  base: process.env.NODE_ENV === "production" ? "/ticket-studio/" : "/",
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
