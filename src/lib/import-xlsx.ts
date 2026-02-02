@@ -62,8 +62,10 @@ function getString(value: unknown) {
 
 function detectSourceKind(headers: string[]): ImportSourceKind {
   const set = new Set(headers.map((h) => h.toLowerCase()))
-  if (set.has("datum") && (set.has("aufgabe") || set.has("prozess id"))) return "export15"
-  if (set.has("startdatum") && set.has("enddatum")) return "export14"
+  // Plan Cards (Plankarten) - has single date (Datum) and task (Aufgabe)
+  if (set.has("datum") && (set.has("aufgabe") || set.has("prozess id"))) return "planCards"
+  // Process Plan (Prozessplan) - has date range (Startdatum, Enddatum)
+  if (set.has("startdatum") && set.has("enddatum")) return "processPlan"
   return "unknown"
 }
 
@@ -79,7 +81,7 @@ function pickHeader(headers: string[], candidates: string[]) {
 export function suggestMapping(table: ImportTable): ColumnMapping {
   const headers = table.headers
 
-  if (table.sourceKind === "export15") {
+  if (table.sourceKind === "planCards") {
     return {
       ticketId: pickHeader(headers, ["Id"]),
       taskId: pickHeader(headers, ["Prozess ID", "ProzessId", "ProzessID", "Id"]),
@@ -96,7 +98,7 @@ export function suggestMapping(table: ImportTable): ColumnMapping {
     }
   }
 
-  if (table.sourceKind === "export14") {
+  if (table.sourceKind === "processPlan") {
     return {
       taskId: pickHeader(headers, ["Id"]),
       taskName: pickHeader(headers, ["Prozessname"]),
@@ -195,12 +197,12 @@ export function applyMapping(
   table: ImportTable,
   mapping: ColumnMapping,
   opts: {
-    export14DayMode?: GenerateMode
+    processPlanDayMode?: GenerateMode
   } = {},
 ): TicketData[] {
   const out: TicketData[] = []
 
-  if (table.sourceKind === "export15") {
+  if (table.sourceKind === "planCards") {
     for (const row of table.rows) {
       const ticketId = getString(mapping.ticketId ? row[mapping.ticketId] : null)
       const taskId = getString(mapping.taskId ? row[mapping.taskId] : null)
@@ -234,8 +236,8 @@ export function applyMapping(
     return out
   }
 
-  if (table.sourceKind === "export14") {
-    const dayMode: GenerateMode = opts.export14DayMode ?? "auto"
+  if (table.sourceKind === "processPlan") {
+    const dayMode: GenerateMode = opts.processPlanDayMode ?? "auto"
     for (const row of table.rows) {
       const taskId = getString(mapping.taskId ? row[mapping.taskId] : null)
       const taskName = getString(mapping.taskName ? row[mapping.taskName] : null)

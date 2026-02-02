@@ -1,4 +1,10 @@
-export type ImportSourceKind = "export14" | "export15" | "unknown"
+/**
+ * Import source format types:
+ * - "processPlan": Process Plan export (Prozessplan) - tasks with date ranges expanded into daily tickets
+ * - "planCards": Plan Cards export (Plankarten) - individual daily task cards
+ * - "unknown": Unrecognized format
+ */
+export type ImportSourceKind = "processPlan" | "planCards" | "unknown"
 
 export type TicketArea = {
   level1?: string

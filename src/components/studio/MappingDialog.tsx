@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { useStudioStore, type Export14DayMode } from "@/state/studio-store"
+import { useStudioStore, type ProcessPlanDayMode } from "@/state/studio-store"
 import type { ColumnMapping } from "@/lib/ticket-types"
 
 function pickableHeaders(headers: string[]) {
@@ -33,8 +33,8 @@ function toKey(v: string) {
 export function MappingDialog() {
   const table = useStudioStore((s) => s.importTable)
   const mapping = useStudioStore((s) => s.mapping)
-  const export14DayMode = useStudioStore((s) => s.export14DayMode)
-  const setExport14DayMode = useStudioStore((s) => s.actions.setExport14DayMode)
+  const processPlanDayMode = useStudioStore((s) => s.processPlanDayMode)
+  const setProcessPlanDayMode = useStudioStore((s) => s.actions.setProcessPlanDayMode)
   const updateMapping = useStudioStore((s) => s.actions.updateMapping)
 
   const headers = useMemo(() => (table ? pickableHeaders(table.headers) : []), [table])
@@ -96,12 +96,12 @@ export function MappingDialog() {
         </DialogHeader>
 
         <div className="grid gap-4">
-          {table.sourceKind === "export14" ? (
+          {table.sourceKind === "processPlan" ? (
             <div className="grid gap-2">
-              <Label>Export (14) day tickets</Label>
+              <Label>Process Plan day tickets</Label>
               <Select
-                value={export14DayMode}
-                onValueChange={(v) => setExport14DayMode(v as Export14DayMode)}
+                value={processPlanDayMode}
+                onValueChange={(v) => setProcessPlanDayMode(v as ProcessPlanDayMode)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select mode" />

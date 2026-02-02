@@ -34,10 +34,10 @@ describe("ticket pipeline", () => {
     )
   })
 
-  it("detects export (15) and generates tickets", () => {
+  it("detects Plan Cards format and generates tickets", () => {
     const serial = excelSerialFromUtcDate(2026, 7, 13) // 2026-07-13
 
-    const export15 = roundTripAoa([
+    const planCardsData = roundTripAoa([
       [
         "Id",
         "Bereich Ebene 1",
@@ -85,8 +85,8 @@ describe("ticket pipeline", () => {
       ],
     ])
 
-    const table = aoaToImportTable("export15.xlsx", export15)
-    expect(table.sourceKind).toBe("export15")
+    const table = aoaToImportTable("plan-cards.xlsx", planCardsData)
+    expect(table.sourceKind).toBe("planCards")
 
     const mapping = suggestMapping(table)
     const tickets = applyMapping(table, mapping)
@@ -102,11 +102,11 @@ describe("ticket pipeline", () => {
     })
   })
 
-  it("detects export (14) and expands tasks into day tickets", () => {
+  it("detects Process Plan format and expands tasks into day tickets", () => {
     const start = excelSerialFromUtcDate(2026, 7, 13) // Mon
     const end = excelSerialFromUtcDate(2026, 7, 17) // Fri
 
-    const export14 = roundTripAoa([
+    const processPlanData = roundTripAoa([
       [
         "Id",
         "Prozessname",
@@ -135,11 +135,11 @@ describe("ticket pipeline", () => {
       ],
     ])
 
-    const table = aoaToImportTable("export14.xlsx", export14)
-    expect(table.sourceKind).toBe("export14")
+    const table = aoaToImportTable("process-plan.xlsx", processPlanData)
+    expect(table.sourceKind).toBe("processPlan")
 
     const mapping = suggestMapping(table)
-    const tickets = applyMapping(table, mapping, { export14DayMode: "auto" })
+    const tickets = applyMapping(table, mapping, { processPlanDayMode: "auto" })
 
     expect(tickets).toHaveLength(5)
     expect(tickets[0].date).toBe("2026-07-13")

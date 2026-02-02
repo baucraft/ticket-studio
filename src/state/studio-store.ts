@@ -14,7 +14,7 @@ export type TemplateWarnings = {
   invalidSvg: boolean
 }
 
-export type Export14DayMode = "auto" | "weekdays" | "all-days"
+export type ProcessPlanDayMode = "auto" | "weekdays" | "all-days"
 
 export type TicketFilter = {
   company?: string
@@ -25,7 +25,7 @@ export type TicketFilter = {
 type StudioState = {
   importTable: ImportTable | null
   mapping: ColumnMapping | null
-  export14DayMode: Export14DayMode
+  processPlanDayMode: ProcessPlanDayMode
 
   tickets: TicketData[]
   selectedTicketId: string | null
@@ -49,7 +49,7 @@ type StudioState = {
 
     setSearch: (value: string) => void
 
-    setExport14DayMode: (mode: Export14DayMode) => void
+    setProcessPlanDayMode: (mode: ProcessPlanDayMode) => void
     updateMapping: (mapping: ColumnMapping) => void
 
     setTemplate: (template: SvgTicketTemplate) => void
@@ -68,7 +68,7 @@ export const useStudioStore = create<StudioState>()(
     immer((set, get) => ({
       importTable: null,
       mapping: null,
-      export14DayMode: "auto",
+      processPlanDayMode: "auto",
 
       tickets: [],
       selectedTicketId: null,
@@ -95,7 +95,7 @@ export const useStudioStore = create<StudioState>()(
             const table = await readXlsxToTable(file)
             const mapping = suggestMapping(table)
             const tickets = applyMapping(table, mapping, {
-              export14DayMode: get().export14DayMode,
+              processPlanDayMode: get().processPlanDayMode,
             })
 
             set((s) => {
@@ -139,15 +139,15 @@ export const useStudioStore = create<StudioState>()(
           })
         },
 
-        setExport14DayMode: (mode) => {
+        setProcessPlanDayMode: (mode) => {
           const { importTable, mapping } = get()
 
           set((s) => {
-            s.export14DayMode = mode
+            s.processPlanDayMode = mode
           })
 
           if (!importTable || !mapping) return
-          const tickets = applyMapping(importTable, mapping, { export14DayMode: mode })
+          const tickets = applyMapping(importTable, mapping, { processPlanDayMode: mode })
           set((s) => {
             s.tickets = tickets
             if (tickets.length && !tickets.some((t) => t.ticketId === s.selectedTicketId)) {
@@ -157,9 +157,9 @@ export const useStudioStore = create<StudioState>()(
         },
 
         updateMapping: (mapping) => {
-          const { importTable, export14DayMode } = get()
+          const { importTable, processPlanDayMode } = get()
           if (!importTable) return
-          const tickets = applyMapping(importTable, mapping, { export14DayMode })
+          const tickets = applyMapping(importTable, mapping, { processPlanDayMode })
           set((s) => {
             s.mapping = mapping
             s.tickets = tickets
@@ -277,7 +277,7 @@ export const useStudioStore = create<StudioState>()(
       name: "ticket-studio-v2", // New key - clean cut from old storage
       partialize: (s) => ({
         template: s.template,
-        export14DayMode: s.export14DayMode,
+        processPlanDayMode: s.processPlanDayMode,
         previewFlipped: s.previewFlipped,
         showTemplateReference: s.showTemplateReference,
       }),
