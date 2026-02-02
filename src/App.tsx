@@ -3,7 +3,6 @@ import { useState } from "react"
 
 import { StudioView } from "@/components/studio/StudioView"
 import { TemplateView } from "@/components/template/TemplateView"
-import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function App() {
@@ -25,10 +24,10 @@ export default function App() {
               Upload template → Import Excel → Preview → Export PDF
             </div>
           </div>
-          <Badge variant="secondary">local-first</Badge>
         </div>
 
-        <Tabs value={tab} onValueChange={setTab} className="mt-4 flex min-h-0 flex-1 flex-col">
+        <Tabs value={tab} onValueChange={setTab} className="mt-4 flex min-h-0 flex-1 flex-col gap-0">
+
           <TabsList>
             <TabsTrigger value="template" className="gap-2">
               <FileCode className="size-4" />

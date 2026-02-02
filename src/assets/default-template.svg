@@ -102,37 +102,36 @@
   <text
      x="5.5"
      y="45.5"
-     font-family="Helvetica, Arial, sans-serif"
+     font-family="helvetica"
      font-size="3.6"
-     font-weight="600"
+     font-weight="bold"
      fill="#111111"
      id="text6">Anmerkungen:</text>
   <!-- Task ID (small, top left corner) -->
   <text
      x="13.2"
      y="7"
-     font-family="Helvetica, Arial, sans-serif"
+     font-family="helvetica"
      font-size="2"
-     font-weight="400"
+     font-weight="normal"
      fill="#666666"
      id="text7">{{taskId}}</text>
   <!-- Task name (template placeholder) -->
   <text
      x="13.2"
-     y="11.122561"
-     font-family="Helvetica, Arial, sans-serif"
-     font-size="4px"
-     font-weight="600"
+     y="11.5"
+     font-family="helvetica"
+     font-size="4"
+     font-weight="bold"
      fill="#111111"
-     id="text8"
-     style="font-size:3.88056px">{{taskName}}</text>
+     id="text8">{{taskName}}</text>
   <!-- Date (directly under task name) -->
   <text
      x="13.2"
-     y="14.825"
-     font-family="Helvetica, Arial, sans-serif"
-     font-size="2.8px"
-     font-weight="500"
+     y="15.5"
+     font-family="helvetica"
+     font-size="2.8"
+     font-weight="normal"
      fill="#111111"
      id="text9">{{date}}</text>
   <!-- Logo placeholder in top of side strip (square ~7x7mm) -->
@@ -149,29 +148,30 @@
   <text
      x="8.3"
      y="8.5"
-     font-family="Helvetica, Arial, sans-serif"
+     font-family="helvetica"
      font-size="2"
+     font-weight="normal"
      fill="#999999"
      text-anchor="middle"
      id="text10">LOGO</text>
   <!-- Company / Trade (vertical text in side strip, rotated, end-aligned below logo) -->
   <!-- text-anchor="end" so text ends at anchor point; text extends downward as it gets longer -->
   <text
-     x="-12.083956"
-     y="7.3954186"
-     font-family="Helvetica, Arial, sans-serif"
-     font-size="2.4px"
-     font-weight="600"
+     x="-12.5"
+     y="7.4"
+     font-family="helvetica"
+     font-size="2.4"
+     font-weight="bold"
      fill="#111111"
      text-anchor="end"
      transform="rotate(-90)"
      id="text11">{{company}}</text>
   <text
-     x="-12.083956"
-     y="10.395419"
-     font-family="Helvetica, Arial, sans-serif"
-     font-size="2.4px"
-     font-weight="600"
+     x="-12.5"
+     y="10.4"
+     font-family="helvetica"
+     font-size="2.4"
+     font-weight="bold"
      fill="#111111"
      text-anchor="end"
      transform="rotate(-90)"
