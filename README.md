@@ -18,13 +18,19 @@ Local-first ticket generator for planning boards. Upload Excel exports, customiz
 
 ## Supported Excel Formats
 
+Example files are provided in the [`examples/`](examples/) folder.
+
 ### Prozessplan (Process Plan)
 
-German columns: `Vorgangsname`, `Anfang`, `Ende`, `Dauer`, `Firma`, `Gewerk`, `Gewerk Hintergrundfarbe`
+Tasks with date ranges. Each task generates daily cards for the date range.
+
+Columns: `Prozessname`, `Startdatum`, `Enddatum`, `Dauer`, `Gewerk`, `Gewerk Hintergrundfarbe`
 
 ### Plankarten (Plan Cards)
 
-German columns: `Vorgangsname`, `Datum`, `Firma`, `Gewerk`
+Individual daily cards (one row per day).
+
+Columns: `Prozessname`, `Datum`, `Gewerk`
 
 ## Tech Stack
 
