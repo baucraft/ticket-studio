@@ -96,4 +96,6 @@ export type SvgTicketTemplate = {
 export type TemplateToken = {
   key: string
   label: string
+  /** Optional hint explaining when/how to use this token */
+  hint?: string
 }

@@ -1,6 +1,7 @@
 import type { SvgTicketTemplate } from "@/lib/template-types"
 import type { TicketData } from "@/lib/ticket-types"
 import { renderTemplateString } from "@/lib/render-template"
+import { wrapSvgText } from "@/lib/svg-text-wrap"
 import { mmToPx } from "@/lib/units"
 
 type Props = {
@@ -26,9 +27,11 @@ export function TicketCanvas({
   // Render the SVG with Mustache to fill in ticket data
   // Ensure SVG has correct viewBox and fills container (SVG-Edit may strip viewBox)
   const rawSvg = renderTemplateString(template.svg, ticket ?? {})
+  // Apply text wrapping for elements with data-wrap-width attribute
+  const wrappedSvg = wrapSvgText(rawSvg)
   const viewBox = `0 0 ${template.widthMm} ${template.heightMm}`
 
-  let renderedSvg = rawSvg
+  let renderedSvg = wrappedSvg
   // Add viewBox if missing
   if (!rawSvg.includes("viewBox")) {
     renderedSvg = rawSvg.replace(/<svg/, `<svg viewBox="${viewBox}"`)

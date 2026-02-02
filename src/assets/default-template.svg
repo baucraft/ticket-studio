@@ -18,7 +18,8 @@
      fill="none"
      stroke="#111111"
      stroke-width="0.4"
-     id="rect1" />
+     id="rect1"
+     style="fill:#ffffff" />
   <!-- Inner border -->
   <rect
      x="4.49"
@@ -28,14 +29,15 @@
      fill="none"
      stroke="#111111"
      stroke-width="0.4"
-     id="rect2" />
-  <!-- Side strip (purple) -->
+     id="rect2"
+     style="fill:#ffffff" />
+  <!-- Side strip - uses {{tradeColor}} from Process Plan data, defaults to light purple -->
   <rect
      x="4.74"
      y="4.49"
      width="7.11"
      height="36.83"
-     fill="#cbbfd7"
+     fill="{{tradeColor}}"
      stroke="none"
      id="rect3" />
   <!-- Header divider line -->
@@ -92,46 +94,50 @@
      fill="#ffffff"
      stroke="none"
      id="rect6" />
-  <!-- Bottom triangle (purple) -->
+  <!-- Bottom triangle - uses {{tradeColor}} to match side strip -->
   <polygon
      points="65.53,90 65.53,118.79 45.64,118.79"
-     fill="#cbbfd7"
+     fill="{{tradeColor}}"
      stroke="none"
      id="polygon6" />
   <!-- Notes label -->
   <text
      x="5.5"
      y="45.5"
-     font-family="helvetica"
+     font-family="Helvetica, Arial, sans-serif"
      font-size="3.6"
-     font-weight="bold"
+     font-weight="600"
      fill="#111111"
      id="text6">Anmerkungen:</text>
   <!-- Task ID (small, top left corner) -->
   <text
-     x="13.2"
-     y="7"
-     font-family="helvetica"
-     font-size="2"
-     font-weight="normal"
+     x="35.136993"
+     y="2.7362645"
+     font-family="Helvetica, Arial, sans-serif"
+     font-size="2px"
+     font-weight="400"
      fill="#666666"
-     id="text7">{{taskId}}</text>
-  <!-- Task name (template placeholder) -->
+     id="text7"><tspan
+       style="text-align:center;text-anchor:middle"
+       id="tspan12">{{taskId}}</tspan></text>
+  <!-- Task name (template placeholder) - wraps at 50mm width -->
   <text
-     x="13.2"
-     y="11.5"
-     font-family="helvetica"
-     font-size="4"
-     font-weight="bold"
+     x="12.141667"
+     y="10.883335"
+     font-family="Helvetica, Arial, sans-serif"
+     font-size="4px"
+     font-weight="600"
      fill="#111111"
-     id="text8">{{taskName}}</text>
+     id="text8"
+     data-wrap-width="60"
+     style="font-size:3.52778px">{{taskName}}</text>
   <!-- Date (directly under task name) -->
   <text
-     x="13.2"
-     y="15.5"
-     font-family="helvetica"
-     font-size="2.8"
-     font-weight="normal"
+     x="12.200457"
+     y="6.9475112"
+     font-family="Helvetica, Arial, sans-serif"
+     font-size="2.8px"
+     font-weight="500"
      fill="#111111"
      id="text9">{{date}}</text>
   <!-- Logo placeholder in top of side strip (square ~7x7mm) -->
@@ -148,32 +154,33 @@
   <text
      x="8.3"
      y="8.5"
-     font-family="helvetica"
+     font-family="Helvetica, Arial, sans-serif"
      font-size="2"
-     font-weight="normal"
      fill="#999999"
      text-anchor="middle"
      id="text10">LOGO</text>
   <!-- Company / Trade (vertical text in side strip, rotated, end-aligned below logo) -->
   <!-- text-anchor="end" so text ends at anchor point; text extends downward as it gets longer -->
   <text
-     x="-12.5"
-     y="7.4"
-     font-family="helvetica"
-     font-size="2.4"
-     font-weight="bold"
+     x="-12.365234"
+     y="7.2739325"
+     font-family="Helvetica, Arial, sans-serif"
+     font-size="2.4px"
+     font-weight="600"
      fill="#111111"
      text-anchor="end"
      transform="rotate(-90)"
-     id="text11">{{company}}</text>
+     id="text11"
+     style="font-size:2.11667px">{{company}}</text>
   <text
-     x="-12.5"
-     y="10.4"
-     font-family="helvetica"
-     font-size="2.4"
-     font-weight="bold"
+     x="-12.365234"
+     y="10.273933"
+     font-family="Helvetica, Arial, sans-serif"
+     font-size="2.4px"
+     font-weight="600"
      fill="#111111"
      text-anchor="end"
      transform="rotate(-90)"
-     id="text12">{{trade}}</text>
+     id="text12"
+     style="font-size:2.11667px">{{trade}}</text>
 </svg>

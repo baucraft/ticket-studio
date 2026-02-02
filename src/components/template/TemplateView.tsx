@@ -183,18 +183,26 @@ export function TemplateView() {
             Use these placeholders in your SVG. They will be replaced with ticket data.
           </div>
 
-          <ScrollArea className="max-h-[35vh]">
+          <ScrollArea>
             <div className="grid gap-0.5 pr-3">
               {DEFAULT_TOKENS.map((t) => (
                 <div
                   key={t.key}
-                  className="flex items-center gap-2 rounded-md px-2 py-1 text-xs hover:bg-muted/40"
+                  className="group flex items-start gap-2 rounded-md px-2 py-1.5 text-xs hover:bg-muted/40"
+                  title={t.hint}
                 >
-                  <Type className="size-3 text-muted-foreground" />
-                  <span className="text-muted-foreground">{t.label}</span>
-                  <code className="ml-auto rounded bg-muted/50 px-1.5 py-0.5 font-mono text-[10px]">
-                    {`{{${t.key}}}`}
-                  </code>
+                  <Type className="mt-0.5 size-3 text-muted-foreground" />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-muted-foreground">{t.label}</span>
+                      <code className="ml-auto rounded bg-muted/50 px-1.5 py-0.5 font-mono text-[10px]">
+                        {`{{${t.key}}}`}
+                      </code>
+                    </div>
+                    {t.hint && (
+                      <div className="mt-0.5 text-[10px] text-muted-foreground/70">{t.hint}</div>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

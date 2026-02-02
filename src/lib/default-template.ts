@@ -7,6 +7,7 @@ export const DEFAULT_TOKENS: TemplateToken[] = [
   { key: "taskName", label: "Task" },
   { key: "company", label: "Company" },
   { key: "trade", label: "Trade" },
+  { key: "tradeColor", label: "Trade Color", hint: "For fill/stroke attributes" },
   { key: "date", label: "Date" },
   { key: "status", label: "Status" },
   { key: "description", label: "Description" },
