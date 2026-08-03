@@ -26,8 +26,11 @@ export default function App() {
           </div>
         </div>
 
-        <Tabs value={tab} onValueChange={setTab} className="mt-4 flex min-h-0 flex-1 flex-col gap-0">
-
+        <Tabs
+          value={tab}
+          onValueChange={setTab}
+          className="mt-4 flex min-h-0 flex-1 flex-col gap-0"
+        >
           <TabsList>
             <TabsTrigger value="template" className="gap-2">
               <FileCode className="size-4" />

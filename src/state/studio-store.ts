@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware"
 import { immer } from "zustand/middleware/immer"
 import DOMPurify from "dompurify"
 
+import { createHausmesseDemoImportTable, createHausmesseDemoTickets } from "@/lib/hausmesse-demo"
 import { applyMapping, readXlsxToTable, suggestMapping } from "@/lib/import-xlsx"
 import { DEFAULT_SVG_TEMPLATE } from "@/lib/default-template-svg"
 import type { ColumnMapping, ImportTable, TicketData } from "@/lib/ticket-types"
@@ -40,9 +41,11 @@ type StudioState = {
 
   importing: boolean
   importError: string | null
+  hausmesseDemoLoaded: boolean
 
   actions: {
     importXlsxFile: (file: File) => Promise<void>
+    loadHausmesseDemo: () => Promise<void>
     setSelectedTicketId: (id: string | null) => void
     setFilter: (next: TicketFilter) => void
     clearFilter: () => void
@@ -83,6 +86,7 @@ export const useStudioStore = create<StudioState>()(
 
       importing: false,
       importError: null,
+      hausmesseDemoLoaded: false,
 
       actions: {
         importXlsxFile: async (file) => {
@@ -105,12 +109,38 @@ export const useStudioStore = create<StudioState>()(
               s.selectedTicketId = tickets[0]?.ticketId ?? null
               s.filter = {}
               s.importing = false
+              s.hausmesseDemoLoaded = false
             })
           } catch (e) {
             const msg = e instanceof Error ? e.message : "Failed to import file"
             set((s) => {
               s.importing = false
               s.importError = msg
+            })
+          }
+        },
+
+        loadHausmesseDemo: async () => {
+          set((s) => {
+            s.importing = true
+            s.importError = null
+          })
+          try {
+            const tickets = await createHausmesseDemoTickets()
+            set((s) => {
+              s.importTable = createHausmesseDemoImportTable()
+              s.mapping = null
+              s.tickets = tickets
+              s.selectedTicketId = tickets[0]?.ticketId ?? null
+              s.filter = {}
+              s.search = ""
+              s.importing = false
+              s.hausmesseDemoLoaded = true
+            })
+          } catch (error) {
+            set((s) => {
+              s.importing = false
+              s.importError = error instanceof Error ? error.message : "Failed to load demo"
             })
           }
         },

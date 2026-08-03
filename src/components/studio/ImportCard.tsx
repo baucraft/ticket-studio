@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react"
 import { useDropzone } from "react-dropzone"
-import { FileSpreadsheet, Info, Upload } from "lucide-react"
+import { FileSpreadsheet, Info, Presentation, Upload } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -22,6 +22,8 @@ function formatSourceKind(kind: ImportSourceKind): string {
       return "Process Plan"
     case "planCards":
       return "Plan Cards"
+    case "hausmesseDemo":
+      return "Hausmesse Demo"
     default:
       return "Unknown"
   }
@@ -29,6 +31,7 @@ function formatSourceKind(kind: ImportSourceKind): string {
 
 export function ImportCard() {
   const importXlsxFile = useStudioStore((s) => s.actions.importXlsxFile)
+  const loadHausmesseDemo = useStudioStore((s) => s.actions.loadHausmesseDemo)
   const importing = useStudioStore((s) => s.importing)
   const importError = useStudioStore((s) => s.importError)
   const importTable = useStudioStore((s) => s.importTable)
@@ -112,16 +115,21 @@ export function ImportCard() {
             </DialogContent>
           </Dialog>
         </div>
-        <Button
-          size="sm"
-          variant="secondary"
-          onClick={open}
-          disabled={importing}
-          className="shrink-0"
-        >
-          <Upload className="size-4" />
-          Choose
-        </Button>
+        <div className="flex shrink-0 gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => void loadHausmesseDemo()}
+            disabled={importing}
+          >
+            <Presentation className="size-4" />
+            Load demo
+          </Button>
+          <Button size="sm" variant="secondary" onClick={open} disabled={importing}>
+            <Upload className="size-4" />
+            Choose
+          </Button>
+        </div>
       </div>
 
       <div
