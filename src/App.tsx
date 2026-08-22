@@ -1,8 +1,9 @@
-import { FileCode, LayoutGrid } from "lucide-react"
+import { FileCode, LayoutGrid, Presentation } from "lucide-react"
 import { useState } from "react"
 
 import { StudioView } from "@/components/studio/StudioView"
 import { TemplateView } from "@/components/template/TemplateView"
+import { TagOnlyTargetView } from "@/components/target/TagOnlyTargetView"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function App() {
@@ -10,18 +11,24 @@ export default function App() {
 
   return (
     <div
-      className="h-svh overflow-hidden"
+      className={tab === "target" ? "min-h-svh" : "h-svh overflow-hidden"}
       style={{
         background:
           "radial-gradient(900px 600px at 10% 0%, oklch(0.985 0 0) 0%, transparent 60%), radial-gradient(700px 500px at 100% 20%, oklch(0.95 0.02 230) 0%, transparent 60%), linear-gradient(oklch(0.99 0 0), oklch(0.985 0 0))",
       }}
     >
-      <div className="mx-auto flex h-full max-w-[1600px] flex-col px-4 py-5">
+      <div
+        className={`mx-auto flex max-w-[1600px] flex-col px-3 py-4 sm:px-4 sm:py-5 ${
+          tab === "target" ? "min-h-svh" : "h-full"
+        }`}
+      >
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <div className="text-lg font-semibold tracking-tight">Ticket Studio</div>
             <div className="text-xs text-muted-foreground">
-              Upload template → Import Excel → Preview → Export PDF
+              {tab === "target"
+                ? "Isoliertes Tag-only-Zielbild fuer DEMO-04"
+                : "Upload template → Import Excel → Preview → Export PDF"}
             </div>
           </div>
         </div>
@@ -32,6 +39,10 @@ export default function App() {
           className="mt-4 flex min-h-0 flex-1 flex-col gap-0"
         >
           <TabsList>
+            <TabsTrigger value="target" className="gap-2">
+              <Presentation className="size-4" />
+              Zielbild
+            </TabsTrigger>
             <TabsTrigger value="template" className="gap-2">
               <FileCode className="size-4" />
               Template
@@ -41,6 +52,10 @@ export default function App() {
               Studio
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="target" className="mt-4 min-h-0 flex-1">
+            <TagOnlyTargetView />
+          </TabsContent>
 
           <TabsContent
             value="template"
