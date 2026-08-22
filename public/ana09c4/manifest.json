@@ -1,0 +1,206 @@
+{
+  "schemaVersion": "demo04-tag-only-assets-v1",
+  "scope": "synthetic_non_product_target_picture",
+  "family": "tagCircle49h12",
+  "format": "deterministic_svg_1_1",
+  "markerSizeDefinition": "outer_edge_of_official_family_raster_excluding_external_quiet_zone",
+  "quietZoneModulesPerSide": 1,
+  "officialProvenance": {
+    "assetRepository": "https://github.com/AprilRobotics/apriltag-imgs",
+    "assetCommit": "f3fd9a7add5bfd82a886fc65240fdb8e3c9ac5a1",
+    "assetFamilyTreeGitSha1": "52cc190bc5d2824afd5f3fb908283d71de86fc6a",
+    "license": "BSD-2-Clause"
+  },
+  "assets": [
+    {
+      "tagId": 0,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00000_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00000.png",
+      "sourcePngSha256": "b302da74f157026ef7ec35236472a321edce5154849e41860eb9281db2b56692",
+      "svgSha256": "48ae2c4c8cf4b2a3246506e037c3cb874cc4be77d2e0aa6295044af9f31ec6b2"
+    },
+    {
+      "tagId": 1,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00001_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00001.png",
+      "sourcePngSha256": "469ac8287d58c446506e7b099afc781b5a342fee7eb0145911349d7cf34f9af5",
+      "svgSha256": "8f2619f71a101af993c35711f85da97799a0a7ca133dfb2f54fdba778b9403c0"
+    },
+    {
+      "tagId": 74,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00074_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00074.png",
+      "sourcePngSha256": "db94a71b3a8fbb5aa591385b48b1c876bce923bb61f68b522bfc57b6035e5328",
+      "svgSha256": "ca488f6e4e0633603e20547d02dd8bcdb520fe0cfefeea9d322d97000f82a651"
+    },
+    {
+      "tagId": 75,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00075_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00075.png",
+      "sourcePngSha256": "e186b1f3615402bcda7401d4bf5e32d70281eb95958a6280187d5dd181a2697f",
+      "svgSha256": "7200775d8e78481bbea6573d539f164309a45f39d9bc83cec0982ecb73b542b5"
+    },
+    {
+      "tagId": 1024,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id01024_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_01024.png",
+      "sourcePngSha256": "f7d1d090d29ad50c6afe456660b329d1dab01c81733fabe6f4e45dea7b565c85",
+      "svgSha256": "7ff98024bf5a80315c792f4c80dcdfed786d6cff35d1b52f005def116e927f14"
+    },
+    {
+      "tagId": 1025,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id01025_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_01025.png",
+      "sourcePngSha256": "bf1462c6a881497a4085dff7cdbc60a9accbbd4ceaf95d5109e495a534003bbf",
+      "svgSha256": "e86540375c796b9b94e3f9b16792c6d541bb8741df83e9604c174f1807e25b07"
+    },
+    {
+      "tagId": 4096,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id04096_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_04096.png",
+      "sourcePngSha256": "0d8974f316a070a240ea010f8c0693ca870b3298c58ddfce10fb66ee8f2c7a8b",
+      "svgSha256": "ac1b9ced79fbe116c965cccddaae0e13d6e0b1b354d57b7376b22d8965b81093"
+    },
+    {
+      "tagId": 4097,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id04097_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_04097.png",
+      "sourcePngSha256": "01b2f89a5e4093be1a015d7c230d489a07ad777d71595e7b151cbe6d441912e1",
+      "svgSha256": "de2f46bcc6bf5976ab5064d7119bce8f7be558a0c226a2d76976e4764c93d41e"
+    },
+    {
+      "tagId": 8192,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id08192_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_08192.png",
+      "sourcePngSha256": "86a2ca133eb29befb98055f6563d36e27d9b7b090efe9cdb1c0fb9bc3c58f6e1",
+      "svgSha256": "1436d55e137f2b106fe0a5733aa33bc62f8df151d7d2306b6c1f26e32a57185c"
+    },
+    {
+      "tagId": 8193,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id08193_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_08193.png",
+      "sourcePngSha256": "e77ab8d852e3a58b7bab6e8943c1c303ef28c74a49c83ae02f87182d3b1a4533",
+      "svgSha256": "13e2b0b4557ca28075a26d0d98a657f909526ebbc5084b924b2906b9404ca9fc"
+    },
+    {
+      "tagId": 24000,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id24000_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_24000.png",
+      "sourcePngSha256": "d1044151e3d9850ab4a5370756e4846eebb60631c2f44c2604a88afc2279df8b",
+      "svgSha256": "bef620179a1abdbbcb945998ef29c7f641ddb4d900c2564a678f0edec211c2a8"
+    },
+    {
+      "tagId": 24001,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id24001_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_24001.png",
+      "sourcePngSha256": "609019a3158eeee2e151982362186810b65df2f1e25bf64f4b966f4793f7ec19",
+      "svgSha256": "7b65f4680c2e2d5cabb45336a0f1d7228658e8b380665c6ca0096b78a3919583"
+    },
+    {
+      "tagId": 40000,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id40000_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_40000.png",
+      "sourcePngSha256": "d4bcff563abc396c8aa09c9de04f7d643f30a4332f4f1f9e094dc8fad22e8bc2",
+      "svgSha256": "33245fb9add9b6eaa7d6e2e30e798340d6988db89576df8a25782f004971064d"
+    },
+    {
+      "tagId": 40001,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id40001_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_40001.png",
+      "sourcePngSha256": "2aea35a42b4240105f67379744c73c6be78bbec0d300df28058ebd0514fb8e50",
+      "svgSha256": "6c2e759262927438ab081364911fb1851a1022bc142d172f8d395399a1da0067"
+    },
+    {
+      "tagId": 63484,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id63484_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_63484.png",
+      "sourcePngSha256": "29d4e49686e6ff2aa79a90609a3b241dd297f10773f5aa1b5a99b76d4bf53481",
+      "svgSha256": "c139a800fd210250df460055beaf1a3a47bda65abdbe09affdc1b8ee2d92ee6f"
+    },
+    {
+      "tagId": 63485,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id63485_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_63485.png",
+      "sourcePngSha256": "b1d98feaba4b0761a57b8bf2a48ec7fef9d8b00ee98839f412f53eb08351e34d",
+      "svgSha256": "747a549c35d9d6ef714e80266a3d113b3a8ddcda967ce9791b5ba72f0d8e7702"
+    },
+    {
+      "tagId": 63486,
+      "role": "board",
+      "status": null,
+      "markerOuterEdgeMm": 36,
+      "filename": "tagCircle49h12_id63486_board_36mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_63486.png",
+      "sourcePngSha256": "484fed3acaaaa9ab36d3ac162a67959e40e7d09fdc3c6c0101419da8cc3d7b67",
+      "svgSha256": "2f566bf776834379a6cf7d627803ef2c55413f0b09d986d30bbe3e401b7787b8"
+    },
+    {
+      "tagId": 63487,
+      "role": "board",
+      "status": null,
+      "markerOuterEdgeMm": 36,
+      "filename": "tagCircle49h12_id63487_board_36mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_63487.png",
+      "sourcePngSha256": "a8c2b0124d88e069dfd1ff8afc7bbdbe4076dee4da87e5d4a8781d95ab106c33",
+      "svgSha256": "e9ee780548fed57c5d7ba4ee34c23889bbf94e8c10f4f020f438385142804539"
+    },
+    {
+      "tagId": 63488,
+      "role": "board",
+      "status": null,
+      "markerOuterEdgeMm": 36,
+      "filename": "tagCircle49h12_id63488_board_36mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_63488.png",
+      "sourcePngSha256": "17cb871bb9ac323ae9b30026b355a378183100648bb82f0e0cf1f3f1599ba5ca",
+      "svgSha256": "f5e93821e6b96d4c2b22a87c8511f31cc2a8fc8372e91b49a5c62549c133c106"
+    }
+  ]
+}

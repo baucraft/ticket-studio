@@ -5,6 +5,21 @@ export const TAG_ONLY_BOARD_ID_MAX = 64509
 export const TAG_ONLY_SYSTEM_ID_MIN = 64510
 export const TAG_ONLY_TEST_ID_MIN = 65022
 
+export const TAG_ONLY_TRADE_COLORS = {
+  Trockenbau: "#1d4ed8",
+  Elektro: "#92400e",
+  Lueftung: "#047857",
+  Logistik: "#6d28d9",
+  Stahlbau: "#b91c1c",
+} as const
+
+export const TAG_ONLY_BOUND_CARD_IDS = new Set([
+  0, 1, 74, 75, 1024, 1025, 4096, 4097, 8192, 8193, 24000, 24001, 40000, 40001, 63484, 63485,
+])
+export const TAG_ONLY_BOUND_BOARD_IDS = new Set([63486, 63487, 63488])
+export const TAG_ONLY_ASSET_MANIFEST_SHA256 =
+  "51d5b532702e288927f77a2a5c24414fbfbe481a16c40d16a091aebd5367c8a9"
+
 export type TagOnlyActivity = {
   sourceProjectId: string
   sourceActivityId: string
@@ -14,6 +29,8 @@ export type TagOnlyActivity = {
   doneTagId: number
   company: string
   trade: string
+  tradeColor: string
+  tradeColorSource: "synthetic_mock"
   area: string
   week: string
   shortTarget: string
@@ -43,13 +60,37 @@ export type TagOnlyFixture = {
   activities: TagOnlyActivity[]
 }
 
-type ActivitySeed = Omit<TagOnlyActivity, "activeTagId" | "doneTagId">
+type ActivitySeed = Omit<
+  TagOnlyActivity,
+  "activeTagId" | "doneTagId" | "tradeColor" | "tradeColorSource"
+>
 
-const activity = (seed: ActivitySeed): TagOnlyActivity => ({
-  ...seed,
-  activeTagId: 2 * seed.markerSlot,
-  doneTagId: 2 * seed.markerSlot + 1,
-})
+const activity = (seed: ActivitySeed): TagOnlyActivity => {
+  const tradeColor = TAG_ONLY_TRADE_COLORS[seed.trade as keyof typeof TAG_ONLY_TRADE_COLORS]
+  if (!tradeColor) throw new Error(`Keine synthetische Gewerksfarbe fuer ${seed.trade}`)
+  return {
+    ...seed,
+    tradeColor,
+    tradeColorSource: "synthetic_mock",
+    activeTagId: 2 * seed.markerSlot,
+    doneTagId: 2 * seed.markerSlot + 1,
+  }
+}
+
+export function tagOnlyCardMarkerFilename(tagId: number, status: "active" | "done"): string {
+  const parityMatches = status === "active" ? tagId % 2 === 0 : tagId % 2 === 1
+  if (!Number.isInteger(tagId) || !parityMatches || !TAG_ONLY_BOUND_CARD_IDS.has(tagId)) {
+    throw new Error(`Kein gebundenes ${status}-Markerasset fuer ID ${tagId}`)
+  }
+  return `tagCircle49h12_id${String(tagId).padStart(5, "0")}_card_${status}_18mm.svg`
+}
+
+export function tagOnlyBoardMarkerFilename(tagId: number): string {
+  if (!Number.isInteger(tagId) || !TAG_ONLY_BOUND_BOARD_IDS.has(tagId)) {
+    throw new Error(`Kein gebundenes Tafelmarkerasset fuer ID ${tagId}`)
+  }
+  return `tagCircle49h12_id${String(tagId).padStart(5, "0")}_board_36mm.svg`
+}
 
 export const TAG_ONLY_FIXTURE: TagOnlyFixture = {
   schemaVersion: "demo-04-tag-only-fixture-v1",
@@ -234,12 +275,15 @@ export function validateTagOnlyFixture(fixture: TagOnlyFixture): TagOnlyFixture 
   const boardMarkerIds = new Set<number>()
   const sourceKeys = new Set<string>()
   const tagIds = new Set<number>()
+  const tradeColors = new Map<string, string>()
+  const colorTrades = new Map<string, string>()
   for (const board of fixture.boards) {
     if (
       !projects.has(board.sourceProjectId) ||
       !Number.isInteger(board.boardMarkerId) ||
       board.boardMarkerId < TAG_ONLY_BOARD_ID_MIN ||
       board.boardMarkerId > TAG_ONLY_BOARD_ID_MAX ||
+      !TAG_ONLY_BOUND_BOARD_IDS.has(board.boardMarkerId) ||
       boardMarkerIds.has(board.boardMarkerId)
     ) {
       throw new Error(`Ungueltige Tafelzuordnung: ${board.id}`)
@@ -260,11 +304,25 @@ export function validateTagOnlyFixture(fixture: TagOnlyFixture): TagOnlyFixture 
       item.doneTagId !== 2 * item.markerSlot + 1 ||
       item.activeTagId < TAG_ONLY_CARD_ID_MIN ||
       item.doneTagId > TAG_ONLY_CARD_ID_MAX ||
+      !TAG_ONLY_BOUND_CARD_IDS.has(item.activeTagId) ||
+      !TAG_ONLY_BOUND_CARD_IDS.has(item.doneTagId) ||
       tagIds.has(item.activeTagId) ||
       tagIds.has(item.doneTagId)
     ) {
       throw new Error(`Ungueltiges nichtproduktives ID-Paar: ${item.sourceActivityId}`)
     }
+    const knownColor = tradeColors.get(item.trade)
+    const knownTrade = colorTrades.get(item.tradeColor)
+    if (
+      item.tradeColorSource !== "synthetic_mock" ||
+      !/^#[0-9a-f]{6}$/i.test(item.tradeColor) ||
+      (knownColor !== undefined && knownColor !== item.tradeColor) ||
+      (knownTrade !== undefined && knownTrade !== item.trade)
+    ) {
+      throw new Error(`Ungueltige synthetische Gewerksfarbe: ${item.trade}`)
+    }
+    tradeColors.set(item.trade, item.tradeColor)
+    colorTrades.set(item.tradeColor, item.trade)
     sourceKeys.add(sourceKey)
     tagIds.add(item.activeTagId)
     tagIds.add(item.doneTagId)
