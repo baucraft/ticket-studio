@@ -1,12 +1,12 @@
 {
   "schemaVersion": "demo04-tag-only-assets-v2",
-  "scope": "synthetic_non_product_preflight",
+  "scope": "lcmd_derived_synthetic_non_product_preflight",
   "format": "deterministic_svg_1_1",
-  "fixtureVersion": "2026-08-25.1",
-  "fixtureSha256": "4f165dcdffb1b0659670b0f83208a367ee0b428b5daa132e53e971e0aa13896f",
+  "fixtureVersion": "2026-08-25.2",
+  "fixtureSha256": "ff96b9fce9b4f12ebfd539efe6a3f153b88b5a84a35a5fc9ef20294fc5bec1d3",
   "canonicalSource": {
     "path": "src/data/demo-04-synthetic-activities.v1.json",
-    "sha256": "4f165dcdffb1b0659670b0f83208a367ee0b428b5daa132e53e971e0aa13896f"
+    "sha256": "ff96b9fce9b4f12ebfd539efe6a3f153b88b5a84a35a5fc9ef20294fc5bec1d3"
   },
   "markerSizeDefinition": "outer_edge_of_official_family_raster_excluding_external_quiet_zone",
   "quietZoneModulesPerSide": 1,

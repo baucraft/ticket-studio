@@ -10,24 +10,24 @@ export const TAG_ONLY_SYSTEM_ID_MIN = 64510
 export const TAG_ONLY_TEST_ID_MIN = 65022
 
 export const TAG_ONLY_TRADE_COLORS = {
-  Trockenbau: "#1d4ed8",
   Elektro: "#92400e",
-  Lueftung: "#047857",
-  Logistik: "#6d28d9",
-  Stahlbau: "#b91c1c",
+  Putz: "#475569",
+  HLS: "#b91c1c",
+  Trockenbau: "#1d4ed8",
+  Estrich: "#047857",
 } as const
 
 export const TAG_ONLY_ASSET_MANIFEST_SHA256 =
-  "6dbb2a5adcd58212d151ef1b9a99400337cfb686c1ac9ff8131d55aabaa9f7f4"
+  "3e70cc6b61461d859732a51a2543533092424afcd5735672977ee8cb2fb42cc7"
 export const TAG_ONLY_CANONICAL_SOURCE_PATH = "src/data/demo-04-synthetic-activities.v1.json"
 export const TAG_ONLY_CANONICAL_SOURCE_SHA256 =
-  "4f165dcdffb1b0659670b0f83208a367ee0b428b5daa132e53e971e0aa13896f"
+  "ff96b9fce9b4f12ebfd539efe6a3f153b88b5a84a35a5fc9ef20294fc5bec1d3"
 
 export type TagOnlyActivity = {
   demoActivityKey: string
   demoProjectKey: "DEMO-04"
   demoArea: "Nord" | "Sued"
-  sourceBinding: { state: "unbound" }
+  sourceBinding: { state: "derived_from_local_read_only_selection" }
   boardId: string
   markerSlot: number
   activeTagId: number
@@ -35,7 +35,7 @@ export type TagOnlyActivity = {
   company: string
   trade: string
   tradeColor: string
-  tradeColorSource: "synthetic_mock"
+  tradeColorSource: "demo_accessible_mapping"
   area: string
   week: string
   shortTarget: string
@@ -61,7 +61,7 @@ export type TagOnlyDemoProject = {
 export type TagOnlyFixture = {
   schemaVersion: "demo-04-synthetic-activities-v1"
   fixtureVersion: string
-  scope: "synthetic_non_product_preflight"
+  scope: "lcmd_derived_synthetic_non_product_preflight"
   provenance: {
     contract: string
     assetRepository: string
@@ -72,11 +72,12 @@ export type TagOnlyFixture = {
   identityContract: {
     demoActivityKey: "stable_demo_bootstrap_key_not_lcmd_process_id"
     demoProjectKey: "demo_context_not_lcmd_project_id"
-    sourceBindingState: "unbound_until_real_lcmd_pilot_export"
+    sourceBindingState: "derived_by_unversioned_local_read_only_selection"
     tagAssignment: "pre_reserved_demo_pairs_not_derived_from_lcmd_ids_sorting_or_rows"
-    lcmdImporterImplemented: false
+    lcmdImporterImplemented: true
     writebackImplemented: false
     validatedSynchronization: false
+    gateQualification: "not_released_by_gate_g4"
   }
   printContract: {
     qualification: "TESTDRUCK / KEINE PRODUKTIONSFREIGABE"
@@ -188,6 +189,7 @@ const IDENTITY_CONTRACT_FIELDS = new Set([
   "lcmdImporterImplemented",
   "writebackImplemented",
   "validatedSynchronization",
+  "gateQualification",
 ])
 const DEMO_PROJECT_FIELDS = new Set(["demoProjectKey", "name"])
 const BOARD_FIELDS = new Set(["id", "demoProjectKey", "demoArea", "name", "area", "boardMarkerId"])
@@ -233,19 +235,21 @@ export function validateTagOnlyFixture(fixture: TagOnlyFixture): TagOnlyFixture 
     !hasExactFields(fixture.provenance, PROVENANCE_FIELDS) ||
     !hasExactFields(fixture.identityContract, IDENTITY_CONTRACT_FIELDS) ||
     fixture.schemaVersion !== "demo-04-synthetic-activities-v1" ||
-    fixture.scope !== "synthetic_non_product_preflight" ||
+    fixture.scope !== "lcmd_derived_synthetic_non_product_preflight" ||
     !hasText(fixture.fixtureVersion) ||
     fixture.provenance?.assetCommit !== "f3fd9a7add5bfd82a886fc65240fdb8e3c9ac5a1" ||
     fixture.provenance?.cardFamily !== "tagCircle49h12" ||
     fixture.provenance?.referenceFamily !== "tagStandard52h13" ||
     fixture.identityContract?.demoActivityKey !== "stable_demo_bootstrap_key_not_lcmd_process_id" ||
     fixture.identityContract?.demoProjectKey !== "demo_context_not_lcmd_project_id" ||
-    fixture.identityContract?.sourceBindingState !== "unbound_until_real_lcmd_pilot_export" ||
+    fixture.identityContract?.sourceBindingState !==
+      "derived_by_unversioned_local_read_only_selection" ||
     fixture.identityContract?.tagAssignment !==
       "pre_reserved_demo_pairs_not_derived_from_lcmd_ids_sorting_or_rows" ||
-    fixture.identityContract?.lcmdImporterImplemented !== false ||
+    fixture.identityContract?.lcmdImporterImplemented !== true ||
     fixture.identityContract?.writebackImplemented !== false ||
-    fixture.identityContract?.validatedSynchronization !== false
+    fixture.identityContract?.validatedSynchronization !== false ||
+    fixture.identityContract?.gateQualification !== "not_released_by_gate_g4"
   ) {
     throw new Error("Der kanonische Zielbildvertrag hat einen unerwarteten Vertragskopf.")
   }
@@ -358,7 +362,7 @@ export function validateTagOnlyFixture(fixture: TagOnlyFixture): TagOnlyFixture 
       board.demoProjectKey !== item.demoProjectKey ||
       board.demoArea !== item.demoArea ||
       demoKeys.has(demoKey) ||
-      item.sourceBinding?.state !== "unbound" ||
+      item.sourceBinding?.state !== "derived_from_local_read_only_selection" ||
       !hasExactFields(item.sourceBinding, SOURCE_BINDING_FIELDS)
     ) {
       throw new Error(`Ungueltiger Demo-Bootstrapschluessel: ${item.demoActivityKey}`)
@@ -394,7 +398,7 @@ export function validateTagOnlyFixture(fixture: TagOnlyFixture): TagOnlyFixture 
     const knownColor = tradeColors.get(item.trade)
     const knownTrade = colorTrades.get(item.tradeColor)
     if (
-      item.tradeColorSource !== "synthetic_mock" ||
+      item.tradeColorSource !== "demo_accessible_mapping" ||
       item.tradeColor !== expectedColor ||
       (knownColor !== undefined && knownColor !== item.tradeColor) ||
       (knownTrade !== undefined && knownTrade !== item.trade)

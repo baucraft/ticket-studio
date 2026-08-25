@@ -138,7 +138,7 @@ export function TagCard({
               {activity.shortTarget}
             </div>
             <div className="mt-2 truncate text-[10px] text-slate-500">
-              Firma (Mock): {activity.company}
+              Quellkontext: {activity.company}
             </div>
           </div>
           {marker("active", activity.activeTagId)}
@@ -172,7 +172,7 @@ export function TagCard({
               {activity.shortTarget}
             </div>
             <div className="mt-2 truncate text-[10px] text-slate-500">
-              Gewerksfarbe: synthetisches Mock-Attribut
+              Gewerksfarbe: barrierearme Demoabbildung
             </div>
           </div>
           {marker("done", activity.doneTagId)}
@@ -186,7 +186,7 @@ export function TagCard({
         </span>
         <span className="mt-1 flex items-center gap-1.5">
           <span className="tag-only-trade-dot" aria-hidden="true" />
-          Gewerksfarbe {activity.trade}: synthetisches Mock-Attribut
+          Gewerksfarbe {activity.trade}: barrierearme Demoabbildung
         </span>
       </div>
     </div>
@@ -263,8 +263,8 @@ export function TagOnlyTargetView() {
   return (
     <div className="tag-only-shell">
       <div className="tag-only-notices" aria-label="Zielbildkennzeichnung">
-        <strong>DEMO-04 / synthetischer, nichtproduktiver Testlauf</strong>
-        <span>Noch nicht an einen LCMD-Export gebunden</span>
+        <strong>DEMO-04 / LCMD-abgeleiteter, nichtproduktiver Testlauf</strong>
+        <span>Aus lokaler read-only LCMD-Auswahl abgeleitet, Quell-IDs nicht versioniert</span>
         <span>Demo-Tag-IDs vorab reserviert, nicht produktiv vergeben</span>
         <span>Keine LCMD-Liveverbindung</span>
         <span>Kein Writeback</span>
@@ -277,15 +277,15 @@ export function TagOnlyTargetView() {
           <div className="mb-3 flex flex-wrap gap-2">
             <Badge className="bg-sky-100 text-sky-800">DEMO-04</Badge>
             <Badge variant="outline" className="border-amber-300 bg-amber-50 text-amber-800">
-              Synthetisches Fixture
+              LCMD-abgeleitetes Fixture
             </Badge>
           </div>
           <p className="tag-only-kicker">Physischer Wochenplan / Zielbild</p>
           <h1>Weniger Code. Mehr lesbare Arbeit.</h1>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-300">
-            50 kanonische synthetische Vorgaenge fuer drei logische Tafeln. Die Ansicht zeigt einen
-            isolierten Tag-only-Messeprototyp und ist nicht mit einem Combined-Analyseergebnis
-            gekoppelt.
+            50 kanonische, aus einem synthetischen LCMD-XLSX-Export abgeleitete Vorgaenge fuer drei
+            logische Tafeln. Die Ansicht zeigt einen isolierten Tag-only-Messeprototyp und ist nicht
+            mit einem Combined-Analyseergebnis gekoppelt.
           </p>
         </div>
         <div className="tag-only-board-marker">
@@ -331,7 +331,7 @@ export function TagOnlyTargetView() {
               <span>01</span>
               <div>
                 <h2>Demo-Kontext und Tafel</h2>
-                <p>Ein Demo-Projektkontext, keine behauptete LCMD-Projekt-ID</p>
+                <p>Lokaler Demo-Projektkontext; konkrete LCMD-Projekt-ID bleibt unversioniert</p>
               </div>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -380,7 +380,7 @@ export function TagOnlyTargetView() {
                 </div>
               </div>
               <div className="mb-2 rounded-lg border border-sky-100 bg-sky-50 px-3 py-2 text-xs leading-relaxed text-sky-950">
-                Filter-Scope: 50 synthetische Demo-Vorgaenge im gewaehlten Tafel-Scope. Mehrere
+                Filter-Scope: 50 LCMD-abgeleitete Demo-Vorgaenge im gewaehlten Tafel-Scope. Mehrere
                 Werte innerhalb eines Filters werden mit ODER, verschiedene Filter mit UND
                 kombiniert. Keine Analyse- oder LCMD-Ergebnisse.
               </div>
@@ -416,7 +416,7 @@ export function TagOnlyTargetView() {
               </div>
               <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
                 <MultiSelectField
-                  label="Firma (Mock-Feld)"
+                  label="Quellkontext"
                   value={filters.company}
                   options={options("company")}
                   onChange={(company) => setFilters((current) => ({ ...current, company }))}
@@ -580,7 +580,7 @@ export function TagOnlyTargetView() {
                           <td>
                             <span className="block font-mono">{item.demoActivityKey}</span>
                             <span className="text-[10px] text-slate-500">
-                              LCMD-Quellidentitaet: unbound
+                              LCMD-Ableitung: lokal geprueft, Quell-ID nicht enthalten
                             </span>
                           </td>
                           <td>
@@ -598,7 +598,7 @@ export function TagOnlyTargetView() {
                             {item.activeTagId} / {item.doneTagId}
                           </td>
                           <td>
-                            <Badge variant="outline">synthetischer Preflight</Badge>
+                            <Badge variant="outline">LCMD-abgeleiteter Preflight</Badge>
                           </td>
                         </tr>
                       ))}

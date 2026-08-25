@@ -22,7 +22,7 @@ const FAMILY_TREES = {
   tagStandard52h13: "eddc1dd85b74f711d8a07b82e326f12d00bf155c",
 }
 const FIXTURE_PATH = resolve("src/data/demo-04-synthetic-activities.v1.json")
-const CANONICAL_SOURCE_SHA256 = "4f165dcdffb1b0659670b0f83208a367ee0b428b5daa132e53e971e0aa13896f"
+const CANONICAL_SOURCE_SHA256 = "ff96b9fce9b4f12ebfd539efe6a3f153b88b5a84a35a5fc9ef20294fc5bec1d3"
 const PINNED_GIT_ENV = { ...process.env, GIT_NO_REPLACE_OBJECTS: "1" }
 
 function option(name) {
@@ -312,7 +312,7 @@ try {
 
     const manifest = {
       schemaVersion: "demo04-tag-only-assets-v2",
-      scope: "synthetic_non_product_preflight",
+      scope: fixture.scope,
       format: "deterministic_svg_1_1",
       fixtureVersion: fixture.fixtureVersion,
       fixtureSha256: sha256(fixtureBytes),

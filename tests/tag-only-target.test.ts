@@ -76,13 +76,13 @@ function tintWithWhite(hex: string, ratio: number): string {
 }
 
 describe("DEMO-04 Tag-only target picture", () => {
-  it("uses stable demo bootstrap keys while every LCMD source binding remains unbound", () => {
+  it("uses stable demo bootstrap keys with local read-only LCMD bindings", () => {
     const fixture = validateTagOnlyFixture(TAG_ONLY_FIXTURE)
-    expect(fixture.scope).toBe("synthetic_non_product_preflight")
+    expect(fixture.scope).toBe("lcmd_derived_synthetic_non_product_preflight")
     expect(fixture.demoProjects).toEqual([
       {
         demoProjectKey: "DEMO-04",
-        name: "DEMO-04 / synthetischer, nichtproduktiver Testlauf",
+        name: "DEMO-04 / aus synthetischem LCMD-Export abgeleitet",
       },
     ])
     expect(fixture.activities).toHaveLength(50)
@@ -93,7 +93,16 @@ describe("DEMO-04 Tag-only target picture", () => {
     expect(new Set(fixture.activities.map((item) => item.demoProjectKey))).toEqual(
       new Set(["DEMO-04"]),
     )
-    expect(fixture.activities.every((item) => item.sourceBinding.state === "unbound")).toBe(true)
+    expect(
+      fixture.activities.every(
+        (item) => item.sourceBinding.state === "derived_from_local_read_only_selection",
+      ),
+    ).toBe(true)
+    expect(fixture.identityContract.gateQualification).toBe("not_released_by_gate_g4")
+    expect(new Set(fixture.activities.map((item) => item.trade))).toEqual(
+      new Set(["Elektro", "Putz", "HLS", "Trockenbau", "Estrich"]),
+    )
+    expect(new Set(fixture.activities.map((item) => item.area)).size).toBe(10)
     expect(new Set(fixture.boards.map((item) => item.demoArea))).toEqual(new Set(["Nord", "Sued"]))
     expect(
       fixture.boards.map(
@@ -321,13 +330,16 @@ describe("DEMO-04 Tag-only target picture", () => {
   it("filters only inside the selected demo context and board", () => {
     const all = filterTagOnlyActivities(TAG_ONLY_FIXTURE, "DEMO-04", "board-nord-a", noFilters)
     expect(all).toHaveLength(18)
+    const selected = TAG_ONLY_FIXTURE.activities[1]
     expect(
       filterTagOnlyActivities(TAG_ONLY_FIXTURE, "DEMO-04", "board-nord-a", {
         ...noFilters,
-        company: ["Mock Partner Blau"],
-        week: ["KW 37"],
+        company: [selected.company],
+        trade: [selected.trade],
+        area: [selected.area],
+        week: [selected.week],
       }).map((item) => item.demoActivityKey),
-    ).toEqual(["D04-002"])
+    ).toEqual([selected.demoActivityKey])
     expect(
       filterTagOnlyActivities(TAG_ONLY_FIXTURE, "DEMO-04", "board-nord-a", {
         ...noFilters,
@@ -337,11 +349,9 @@ describe("DEMO-04 Tag-only target picture", () => {
     const combined = filterTagOnlyActivities(TAG_ONLY_FIXTURE, "", "", {
       ...noFilters,
       trade: ["Elektro", "Trockenbau"],
-      week: ["KW 36", "KW 37", "KW 38"],
     })
-    expect(combined.length).toBeGreaterThan(1)
+    expect(combined).toHaveLength(20)
     expect(new Set(combined.map((item) => item.trade))).toEqual(new Set(["Elektro", "Trockenbau"]))
-    expect(new Set(combined.map((item) => item.week))).toEqual(new Set(["KW 36", "KW 37", "KW 38"]))
     expect(
       filterTagOnlyActivities(TAG_ONLY_FIXTURE, "", "", {
         ...noFilters,
@@ -355,8 +365,10 @@ describe("DEMO-04 Tag-only target picture", () => {
       new URL("../src/components/target/TagOnlyTargetView.tsx", import.meta.url),
       "utf8",
     )
-    expect(source).toContain("DEMO-04 / synthetischer, nichtproduktiver Testlauf")
-    expect(source).toContain("Noch nicht an einen LCMD-Export gebunden")
+    expect(source).toContain("DEMO-04 / LCMD-abgeleiteter, nichtproduktiver Testlauf")
+    expect(source).toContain(
+      "Aus lokaler read-only LCMD-Auswahl abgeleitet, Quell-IDs nicht versioniert",
+    )
     expect(source).toContain("Demo-Tag-IDs vorab reserviert, nicht produktiv vergeben")
     expect(source).toContain(
       "Tag-only-Layout und physische Erkennung nicht durch Gate G4 freigegeben",
@@ -366,7 +378,7 @@ describe("DEMO-04 Tag-only target picture", () => {
     expect(source).toContain("Keine validierte laufende Synchronisierung")
     expect(source).toContain("Nur Messeauswahl (8)")
     expect(source).toContain("Alle 50 anzeigen")
-    expect(source).toContain("Filter-Scope: 50 synthetische Demo-Vorgaenge")
+    expect(source).toContain("Filter-Scope: 50 LCMD-abgeleitete Demo-Vorgaenge")
     expect(source).toContain("keine Vergabe und keine Persistenz")
     expect(source).not.toContain("Markerbild nicht Bestandteil")
     expect(source).not.toContain("crypto.subtle")
@@ -445,13 +457,13 @@ describe("DEMO-04 Tag-only target picture", () => {
     expect(() => tagOnlyBoardMarkerFilename(63489)).toThrow("Kein gebundenes")
   })
 
-  it("uses one stable mock color per trade and distinct colors across trades", () => {
+  it("uses one accessible demo color per LCMD trade and distinct colors across trades", () => {
     const colorsByTrade = new Map<string, Set<string>>()
     for (const item of TAG_ONLY_FIXTURE.activities) {
       const colors = colorsByTrade.get(item.trade) ?? new Set<string>()
       colors.add(item.tradeColor)
       colorsByTrade.set(item.trade, colors)
-      expect(item.tradeColorSource).toBe("synthetic_mock")
+      expect(item.tradeColorSource).toBe("demo_accessible_mapping")
     }
     expect([...colorsByTrade.values()].every((colors) => colors.size === 1)).toBe(true)
     expect(new Set([...colorsByTrade.values()].map((colors) => [...colors][0])).size).toBe(

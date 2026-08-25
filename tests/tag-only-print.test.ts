@@ -164,7 +164,9 @@ describe("DEMO-04 canonical 50-activity print contract", () => {
     })
     expect(manifest.fixture).toEqual(TAG_ONLY_FIXTURE)
     expect(assignment.canonicalSource).toEqual(manifest.canonicalSource)
-    expect(assignment.sourceBinding).toEqual({ state: "unbound" })
+    expect(assignment.sourceBinding).toEqual({
+      state: "derived_from_local_read_only_selection",
+    })
     expect(csv).toHaveLength(50)
     const csvByKey = new Map(csv.map((row) => [row.demoActivityKey, row]))
     for (const activity of TAG_ONLY_FIXTURE.activities) {
@@ -310,10 +312,13 @@ describe("DEMO-04 canonical 50-activity print contract", () => {
       },
       fixtureVersion: TAG_ONLY_FIXTURE.fixtureVersion,
       scope: TAG_ONLY_FIXTURE.scope,
-      sourceBinding: { state: "unbound" },
+      sourceBinding: { state: "derived_from_local_read_only_selection" },
     })
     expect(new TextDecoder().decode(generated.instructions)).toContain(
       `Kanonische Quelle SHA-256: ${TAG_ONLY_CANONICAL_SOURCE_SHA256}`,
+    )
+    expect(new TextDecoder().decode(generated.instructions)).toContain(
+      "Keine Freigabe durch Gate G4.",
     )
     const artifacts = {
       cardsPdf: generated.cardsPdf,

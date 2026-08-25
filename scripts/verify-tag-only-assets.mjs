@@ -3,9 +3,9 @@ import { readFileSync, readdirSync } from "node:fs"
 import { resolve } from "node:path"
 import { pathToFileURL } from "node:url"
 
-const MANIFEST_SHA256 = "6dbb2a5adcd58212d151ef1b9a99400337cfb686c1ac9ff8131d55aabaa9f7f4"
+const MANIFEST_SHA256 = "3e70cc6b61461d859732a51a2543533092424afcd5735672977ee8cb2fb42cc7"
 const CANONICAL_SOURCE_PATH = resolve("src/data/demo-04-synthetic-activities.v1.json")
-const CANONICAL_SOURCE_SHA256 = "4f165dcdffb1b0659670b0f83208a367ee0b428b5daa132e53e971e0aa13896f"
+const CANONICAL_SOURCE_SHA256 = "ff96b9fce9b4f12ebfd539efe6a3f153b88b5a84a35a5fc9ef20294fc5bec1d3"
 const ASSET_COMMIT = "f3fd9a7add5bfd82a886fc65240fdb8e3c9ac5a1"
 const FAMILY_TREES = {
   tagCircle49h12: "52cc190bc5d2824afd5f3fb908283d71de86fc6a",
@@ -36,7 +36,7 @@ export function verifyTagOnlyAssetsAgainstSource(assetDirValue, fixtureBytesValu
   const manifest = JSON.parse(manifestBytes.toString("ascii"))
   if (
     manifest.schemaVersion !== "demo04-tag-only-assets-v2" ||
-    manifest.scope !== "synthetic_non_product_preflight" ||
+    manifest.scope !== "lcmd_derived_synthetic_non_product_preflight" ||
     manifest.fixtureVersion !== fixture.fixtureVersion ||
     manifest.fixtureSha256 !== sha256(fixtureBytes) ||
     manifest.canonicalSource?.path !== "src/data/demo-04-synthetic-activities.v1.json" ||

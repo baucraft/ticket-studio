@@ -326,7 +326,7 @@ function drawCard(
       color: rgb(0.08, 0.1, 0.16),
     })
   })
-  page.drawText(`${activity.demoActivityKey} | LCMD source: unbound`, {
+  page.drawText(`${activity.demoActivityKey} | LCMD-derived; source ID kept local`, {
     x: mm(5),
     y: mm(39),
     size: mm(1.55),
@@ -731,7 +731,7 @@ function boardAssignment(fixture: TagOnlyFixture, source: SourceBinding) {
     fixtureVersion: fixture.fixtureVersion,
     scope: fixture.scope,
     canonicalSource: { path: source.path, sha256: source.sha256 },
-    sourceBinding: { state: "unbound" },
+    sourceBinding: { state: fixture.activities[0].sourceBinding.state },
     physicalBoardCount: fixture.preflight.physicalBoardCount,
     mode: fixture.preflight.mode,
     instructions: fixture.preflight.instructions,
@@ -759,9 +759,10 @@ function printInstructions(fixture: TagOnlyFixture, source: SourceBinding) {
     `Fixture: ${fixture.fixtureVersion}`,
     `Kanonische Quelle: ${source.path}`,
     `Kanonische Quelle SHA-256: ${source.sha256}`,
-    "Noch nicht an einen LCMD-Export gebunden.",
+    "Aus synthetischem LCMD-XLSX-Export abgeleitet; Quell-IDs nur lokal gebunden.",
     "Demo-Tag-IDs vorab reserviert, nicht produktiv vergeben.",
     "Keine LCMD-Liveverbindung. Kein Writeback. Keine validierte laufende Synchronisierung.",
+    "Keine Freigabe durch Gate G4.",
     "",
     "Druckkonfiguration:",
     "- Papierformat: A4",
@@ -812,7 +813,7 @@ async function createTagOnlyPrintPackageFromSource(
         canonicalSource: { path: source.path, sha256: source.sha256 },
         fixtureVersion: fixture.fixtureVersion,
         scope: fixture.scope,
-        sourceBinding: { state: "unbound" },
+        sourceBinding: { state: fixture.activities[0].sourceBinding.state },
       },
       null,
       2,
