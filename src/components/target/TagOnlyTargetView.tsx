@@ -4,47 +4,88 @@ import { useState, type CSSProperties } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
   filterTagOnlyActivities,
   TAG_ONLY_FIXTURE,
   tagOnlyBoardMarkerFilename,
+  tagOnlyActivityKey,
   tagOnlyCardMarkerFilename,
   type TagOnlyActivity,
   type TagOnlyFilters,
   validateTagOnlyFixture,
 } from "@/lib/tag-only-target"
 
-const EMPTY_FILTERS: TagOnlyFilters = { company: "", trade: "", area: "", week: "" }
+const EMPTY_FILTERS: TagOnlyFilters = {
+  company: [],
+  trade: [],
+  area: [],
+  week: [],
+  query: "",
+}
 
-function SelectField({
+function MultiSelectField({
   label,
   value,
   options,
   onChange,
 }: {
   label: string
-  value: string
+  value: string[]
   options: string[]
-  onChange: (value: string) => void
+  onChange: (value: string[]) => void
 }) {
+  const summary = value.length === 0 ? "Alle" : value.join(", ")
   return (
-    <label className="grid gap-1.5 text-xs font-medium text-slate-600">
-      {label}
-      <div className="relative">
-        <select
-          className="h-10 w-full appearance-none rounded-lg border border-slate-200 bg-white px-3 pr-9 text-sm text-slate-900 outline-none transition focus:border-sky-500 focus:ring-3 focus:ring-sky-100"
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
+    <div className="grid min-w-0 gap-1.5 text-xs font-medium text-slate-600">
+      <span>{label}</span>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            type="button"
+            className="flex h-10 min-w-0 items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white px-3 text-left text-sm font-normal text-slate-900 outline-none transition hover:bg-slate-50 focus:border-sky-500 focus:ring-3 focus:ring-sky-100"
+            aria-label={`${label}: ${summary}`}
+          >
+            <span className="truncate">{summary}</span>
+            <ChevronDown className="size-4 shrink-0 text-slate-400" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="start"
+          className="w-[var(--radix-dropdown-menu-trigger-width)] min-w-52"
         >
-          <option value="">Alle</option>
+          <DropdownMenuCheckboxItem
+            checked={value.length === 0}
+            onCheckedChange={() => onChange([])}
+            onSelect={(event) => event.preventDefault()}
+          >
+            Alle
+          </DropdownMenuCheckboxItem>
+          <DropdownMenuSeparator />
           {options.map((option) => (
-            <option key={option} value={option}>
+            <DropdownMenuCheckboxItem
+              key={option}
+              checked={value.includes(option)}
+              onCheckedChange={() =>
+                onChange(
+                  value.includes(option)
+                    ? value.filter((entry) => entry !== option)
+                    : [...value, option],
+                )
+              }
+              onSelect={(event) => event.preventDefault()}
+            >
               {option}
-            </option>
+            </DropdownMenuCheckboxItem>
           ))}
-        </select>
-        <ChevronDown className="pointer-events-none absolute top-3 right-3 size-4 text-slate-400" />
-      </div>
-    </label>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   )
 }
 
@@ -114,7 +155,7 @@ export function TagCard({
             </div>
             <p className="mt-3 text-sm leading-relaxed text-slate-700">{activity.fullTarget}</p>
             <div className="mt-auto flex items-end justify-between gap-3 pt-4 text-[9px] text-slate-400">
-              <span className="font-mono">{activity.sourceActivityId}</span>
+              <span className="font-mono">{activity.demoActivityKey}</span>
               <span>Konzept, kein Druckexport</span>
             </div>
           </div>
@@ -172,11 +213,11 @@ function initialAssetState(): { status: "ready" | "error"; error: string } {
 export function TagOnlyTargetView() {
   const [assetState, setAssetState] = useState(initialAssetState)
   const { status, error } = assetState
-  const [projectId, setProjectId] = useState(TAG_ONLY_FIXTURE.projects[0].sourceProjectId)
-  const [boardId, setBoardId] = useState(TAG_ONLY_FIXTURE.boards[0].id)
+  const [boardId, setBoardId] = useState("")
   const [filters, setFilters] = useState<TagOnlyFilters>(EMPTY_FILTERS)
   const [selected, setSelected] = useState<Set<string>>(new Set())
-  const [previewId, setPreviewId] = useState(TAG_ONLY_FIXTURE.activities[0].sourceActivityId)
+  const [previewId, setPreviewId] = useState(tagOnlyActivityKey(TAG_ONLY_FIXTURE.activities[0]))
+  const [featuredOnly, setFeaturedOnly] = useState(true)
   const [done, setDone] = useState(false)
 
   const failAssetRendering = () => {
@@ -186,46 +227,35 @@ export function TagOnlyTargetView() {
     })
   }
 
-  const projectBoards = TAG_ONLY_FIXTURE.boards.filter(
-    (board) => board.sourceProjectId === projectId,
+  const board = TAG_ONLY_FIXTURE.boards.find((item) => item.id === boardId)
+  const scopedActivities = TAG_ONLY_FIXTURE.activities.filter(
+    (item) => !boardId || item.boardId === boardId,
   )
-  const board = projectBoards.find((item) => item.id === boardId) ?? projectBoards[0]
-  const boardActivities = TAG_ONLY_FIXTURE.activities.filter(
-    (item) => item.sourceProjectId === projectId && item.boardId === board.id,
-  )
-  const visibleActivities = filterTagOnlyActivities(TAG_ONLY_FIXTURE, projectId, board.id, filters)
+  const filteredActivities = filterTagOnlyActivities(TAG_ONLY_FIXTURE, "DEMO-04", boardId, filters)
+  const visibleActivities = featuredOnly
+    ? filteredActivities.filter((item) => item.featured)
+    : filteredActivities
   const preview =
-    visibleActivities.find((item) => item.sourceActivityId === previewId) ?? visibleActivities[0]
+    visibleActivities.find((item) => tagOnlyActivityKey(item) === previewId) ?? visibleActivities[0]
   const options = (key: "company" | "trade" | "area" | "week") =>
-    [...new Set(boardActivities.map((item) => item[key]))].sort()
-
-  const changeProject = (nextProjectId: string) => {
-    const nextBoard = TAG_ONLY_FIXTURE.boards.find(
-      (item) => item.sourceProjectId === nextProjectId,
-    )!
-    const nextPreview = TAG_ONLY_FIXTURE.activities.find((item) => item.boardId === nextBoard.id)!
-    setProjectId(nextProjectId)
-    setBoardId(nextBoard.id)
-    setPreviewId(nextPreview.sourceActivityId)
-    setFilters(EMPTY_FILTERS)
-    setSelected(new Set())
-    setDone(false)
-  }
+    [...new Set(scopedActivities.map((item) => item[key]))].sort()
 
   const changeBoard = (nextBoardId: string) => {
-    const nextPreview = TAG_ONLY_FIXTURE.activities.find((item) => item.boardId === nextBoardId)!
+    const nextPreview = TAG_ONLY_FIXTURE.activities.find(
+      (item) => !nextBoardId || item.boardId === nextBoardId,
+    )!
     setBoardId(nextBoardId)
-    setPreviewId(nextPreview.sourceActivityId)
+    setPreviewId(tagOnlyActivityKey(nextPreview))
     setFilters(EMPTY_FILTERS)
-    setSelected(new Set())
     setDone(false)
   }
 
-  const toggle = (sourceActivityId: string) => {
+  const toggle = (item: TagOnlyActivity) => {
+    const key = tagOnlyActivityKey(item)
     setSelected((current) => {
       const next = new Set(current)
-      if (next.has(sourceActivityId)) next.delete(sourceActivityId)
-      else next.add(sourceActivityId)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
       return next
     })
   }
@@ -233,9 +263,13 @@ export function TagOnlyTargetView() {
   return (
     <div className="tag-only-shell">
       <div className="tag-only-notices" aria-label="Zielbildkennzeichnung">
-        <strong>Demonstrator / Zielbild - keine Produktionsfreigabe</strong>
-        <span>Tag-only-Layout und physische Erkennung werden noch in Gate G4 validiert</span>
+        <strong>DEMO-04 / synthetischer, nichtproduktiver Testlauf</strong>
+        <span>Noch nicht an einen LCMD-Export gebunden</span>
+        <span>Demo-Tag-IDs vorab reserviert, nicht produktiv vergeben</span>
         <span>Keine LCMD-Liveverbindung</span>
+        <span>Kein Writeback</span>
+        <span>Keine validierte laufende Synchronisierung</span>
+        <span>Tag-only-Layout und physische Erkennung nicht durch Gate G4 freigegeben</span>
       </div>
 
       <header className="tag-only-hero">
@@ -249,27 +283,35 @@ export function TagOnlyTargetView() {
           <p className="tag-only-kicker">Physischer Wochenplan / Zielbild</p>
           <h1>Weniger Code. Mehr lesbare Arbeit.</h1>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-300">
-            Selektive Karten fuer eine konkrete Tafel. Die Ansicht zeigt einen isolierten
-            Tag-only-Messeprototyp und ist nicht mit einem Combined-Analyseergebnis gekoppelt.
+            50 kanonische synthetische Vorgaenge fuer drei logische Tafeln. Die Ansicht zeigt einen
+            isolierten Tag-only-Messeprototyp und ist nicht mit einem Combined-Analyseergebnis
+            gekoppelt.
           </p>
         </div>
         <div className="tag-only-board-marker">
           {status === "ready" ? (
-            <img
-              src={`${import.meta.env.BASE_URL}ana09c4/${tagOnlyBoardMarkerFilename(board.boardMarkerId)}`}
-              alt={`Offizieller ANA-09C4-Provenienzvektor, Tafelmarker ID ${board.boardMarkerId}`}
-              data-board-marker-id={board.boardMarkerId}
-              onError={failAssetRendering}
-            />
+            <div className="tag-only-board-marker__images">
+              {(board ? [board] : TAG_ONLY_FIXTURE.boards).map((item) => (
+                <img
+                  key={item.id}
+                  src={`${import.meta.env.BASE_URL}ana09c4/${tagOnlyBoardMarkerFilename(item.boardMarkerId)}`}
+                  alt={`Offizieller ANA-09C4-Provenienzvektor, Tafelmarker ID ${item.boardMarkerId}`}
+                  data-board-marker-id={item.boardMarkerId}
+                  onError={failAssetRendering}
+                />
+              ))}
+            </div>
           ) : (
             <AlertTriangle className="size-10 text-amber-300" aria-hidden="true" />
           )}
           <div>
             <span>Grosser Tafelmarker</span>
-            <strong>ID {board.boardMarkerId}</strong>
+            <strong>{board ? `ID ${board.boardMarkerId}` : "IDs 63486-63488"}</strong>
             <small>
               {status === "ready"
-                ? "Gebundener ANA-09C4-Provenienzvektor"
+                ? board
+                  ? "Gebundener ANA-09C4-Provenienzvektor"
+                  : "Eine physische Tafel, drei sequenzielle Belegungen"
                 : "Asset nicht dargestellt"}
             </small>
           </div>
@@ -288,39 +330,40 @@ export function TagOnlyTargetView() {
             <div className="tag-only-section-title">
               <span>01</span>
               <div>
-                <h2>Projekt und Tafel</h2>
-                <p>Nur synthetische Auswahl, keine Liveabfrage</p>
+                <h2>Demo-Kontext und Tafel</h2>
+                <p>Ein Demo-Projektkontext, keine behauptete LCMD-Projekt-ID</p>
               </div>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
-              <label className="grid gap-1.5 text-xs font-medium text-slate-600">
-                Synthetisches Projekt
-                <select
-                  className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm"
-                  value={projectId}
-                  onChange={(event) => changeProject(event.target.value)}
-                >
-                  {TAG_ONLY_FIXTURE.projects.map((project) => (
-                    <option key={project.sourceProjectId} value={project.sourceProjectId}>
-                      {project.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <div className="grid gap-1.5 text-xs font-medium text-slate-600">
+                Demo-Projektkontext
+                <div className="flex h-10 items-center rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900">
+                  <span className="truncate">{TAG_ONLY_FIXTURE.demoProjects[0].name}</span>
+                </div>
+              </div>
               <label className="grid gap-1.5 text-xs font-medium text-slate-600">
                 Konkrete Tafel
                 <select
                   className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm"
-                  value={board.id}
+                  value={boardId}
                   onChange={(event) => changeBoard(event.target.value)}
                 >
-                  {projectBoards.map((item) => (
+                  <option value="">Alle Tafeln</option>
+                  {TAG_ONLY_FIXTURE.boards.map((item) => (
                     <option key={item.id} value={item.id}>
                       {item.name}
                     </option>
                   ))}
                 </select>
               </label>
+            </div>
+            <div className="tag-only-contract-counts" aria-label="Kanonischer Umfang">
+              <strong>50</strong>
+              <span>synthetische Vorgaenge</span>
+              <strong>8</strong>
+              <span>gefuehrte Messeauswahl</span>
+              <strong>100</strong>
+              <span>eindeutige Kartenmarker</span>
             </div>
           </section>
 
@@ -331,63 +374,105 @@ export function TagOnlyTargetView() {
                 <div>
                   <h2>Forecast zusammenstellen</h2>
                   <p>
-                    {visibleActivities.length} passende Aktivitaeten / {selected.size} gewaehlt
+                    {visibleActivities.length} von 50 synthetischen Vorgaengen sichtbar /{" "}
+                    {selected.size} fuer Manifestvorschau markiert
                   </p>
                 </div>
               </div>
+              <div className="mb-2 rounded-lg border border-sky-100 bg-sky-50 px-3 py-2 text-xs leading-relaxed text-sky-950">
+                Filter-Scope: 50 synthetische Demo-Vorgaenge im gewaehlten Tafel-Scope. Mehrere
+                Werte innerhalb eines Filters werden mit ODER, verschiedene Filter mit UND
+                kombiniert. Keine Analyse- oder LCMD-Ergebnisse.
+              </div>
+              <div className="mb-3 grid gap-2 sm:grid-cols-[1fr_auto] sm:items-end">
+                <label className="grid gap-1.5 text-xs font-medium text-slate-600">
+                  Suche im kanonischen 50er-Demo-Vertrag
+                  <input
+                    type="search"
+                    className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-sky-500 focus:ring-3 focus:ring-sky-100"
+                    value={filters.query}
+                    placeholder="SOLL, Firma, Demo-Schluessel oder Marker-ID"
+                    onChange={(event) =>
+                      setFilters((current) => ({ ...current, query: event.target.value }))
+                    }
+                  />
+                </label>
+                <div className="grid gap-1 rounded-lg bg-slate-100 p-1 sm:grid-cols-2">
+                  <Button
+                    variant={featuredOnly ? "default" : "ghost"}
+                    onClick={() => setFeaturedOnly(true)}
+                    aria-pressed={featuredOnly}
+                  >
+                    Nur Messeauswahl (8)
+                  </Button>
+                  <Button
+                    variant={!featuredOnly ? "default" : "ghost"}
+                    onClick={() => setFeaturedOnly(false)}
+                    aria-pressed={!featuredOnly}
+                  >
+                    Alle 50 anzeigen
+                  </Button>
+                </div>
+              </div>
               <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-                <SelectField
+                <MultiSelectField
                   label="Firma (Mock-Feld)"
                   value={filters.company}
                   options={options("company")}
                   onChange={(company) => setFilters((current) => ({ ...current, company }))}
                 />
-                <SelectField
+                <MultiSelectField
                   label="Gewerk"
                   value={filters.trade}
                   options={options("trade")}
                   onChange={(trade) => setFilters((current) => ({ ...current, trade }))}
                 />
-                <SelectField
+                <MultiSelectField
                   label="Bereich"
                   value={filters.area}
                   options={options("area")}
                   onChange={(area) => setFilters((current) => ({ ...current, area }))}
                 />
-                <SelectField
+                <MultiSelectField
                   label="Kommende Wochenscheibe"
                   value={filters.week}
                   options={options("week")}
                   onChange={(week) => setFilters((current) => ({ ...current, week }))}
                 />
               </div>
-              <div className="mt-4 grid gap-2">
+              <div className="mt-4 grid max-h-[48rem] gap-2 overflow-y-auto pr-1">
                 {visibleActivities.map((item) => {
-                  const checked = selected.has(item.sourceActivityId)
+                  const itemKey = tagOnlyActivityKey(item)
+                  const checked = selected.has(itemKey)
                   return (
                     <div
-                      key={`${item.sourceProjectId}:${item.sourceActivityId}`}
-                      className={`tag-only-activity ${preview?.sourceActivityId === item.sourceActivityId ? "is-preview" : ""}`}
+                      key={item.demoActivityKey}
+                      className={`tag-only-activity ${preview && tagOnlyActivityKey(preview) === itemKey ? "is-preview" : ""}`}
                       style={{ "--trade-color": item.tradeColor } as CSSProperties}
                     >
                       <button
                         className={`tag-only-check ${checked ? "is-checked" : ""}`}
-                        onClick={() => toggle(item.sourceActivityId)}
-                        aria-label={`${item.shortTarget} zum Druck vormerken`}
+                        onClick={() => toggle(item)}
+                        aria-label={`${item.shortTarget} fuer Manifestvorschau markieren`}
                         aria-pressed={checked}
                       >
-                        {checked && <Check className="size-3.5" />}
+                        <span className="tag-only-check__box">
+                          {checked && <Check className="size-3.5" />}
+                        </span>
                       </button>
                       <button
                         className="min-w-0 flex-1 text-left"
                         onClick={() => {
-                          setPreviewId(item.sourceActivityId)
+                          setPreviewId(itemKey)
                           setDone(false)
                         }}
                       >
                         <div className="flex flex-wrap items-center gap-2">
                           <strong className="truncate text-sm">{item.shortTarget}</strong>
                           <Badge variant="secondary">{item.week}</Badge>
+                          {item.featured && (
+                            <Badge className="bg-amber-100 text-amber-900">Messeauswahl</Badge>
+                          )}
                         </div>
                         <div className="mt-1 flex min-w-0 items-center gap-1.5 text-xs text-slate-500">
                           <span className="tag-only-trade-dot" aria-hidden="true" />
@@ -407,8 +492,15 @@ export function TagOnlyTargetView() {
                   <div className="tag-only-empty">
                     <Rows3 className="size-6" />
                     <strong>Keine Aktivitaet passt zu diesen Filtern.</strong>
-                    <span>Filter zuruecksetzen oder eine andere Tafel waehlen.</span>
-                    <Button variant="outline" size="sm" onClick={() => setFilters(EMPTY_FILTERS)}>
+                    <span>Filter oder Messeauswahl zuruecksetzen.</span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setFilters(EMPTY_FILTERS)
+                        setFeaturedOnly(false)
+                      }}
+                    >
                       Filter zuruecksetzen
                     </Button>
                   </div>
@@ -471,7 +563,7 @@ export function TagOnlyTargetView() {
                 <table>
                   <thead>
                     <tr>
-                      <th>Fachlicher Quellschluessel</th>
+                      <th>Demo-Bootstrapschluessel</th>
                       <th>Tafel</th>
                       <th>Aktiv / Erledigt</th>
                       <th>Status</th>
@@ -479,21 +571,34 @@ export function TagOnlyTargetView() {
                   </thead>
                   <tbody>
                     {[...selected]
-                      .map((id) => boardActivities.find((item) => item.sourceActivityId === id))
+                      .map((id) =>
+                        TAG_ONLY_FIXTURE.activities.find((item) => tagOnlyActivityKey(item) === id),
+                      )
                       .filter((item): item is TagOnlyActivity => Boolean(item))
                       .map((item) => (
-                        <tr key={`${item.sourceProjectId}:${item.sourceActivityId}`}>
-                          <td className="font-mono">
-                            ({item.sourceProjectId}, {item.sourceActivityId})
+                        <tr key={item.demoActivityKey}>
+                          <td>
+                            <span className="block font-mono">{item.demoActivityKey}</span>
+                            <span className="text-[10px] text-slate-500">
+                              LCMD-Quellidentitaet: unbound
+                            </span>
                           </td>
                           <td>
-                            {board.name} / Marker {board.boardMarkerId}
+                            {
+                              TAG_ONLY_FIXTURE.boards.find((entry) => entry.id === item.boardId)!
+                                .name
+                            }{" "}
+                            / Marker{" "}
+                            {
+                              TAG_ONLY_FIXTURE.boards.find((entry) => entry.id === item.boardId)!
+                                .boardMarkerId
+                            }
                           </td>
                           <td className="font-mono">
                             {item.activeTagId} / {item.doneTagId}
                           </td>
                           <td>
-                            <Badge variant="outline">nur vorgemerkt</Badge>
+                            <Badge variant="outline">synthetischer Preflight</Badge>
                           </td>
                         </tr>
                       ))}
@@ -508,8 +613,10 @@ export function TagOnlyTargetView() {
               <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs leading-relaxed text-amber-950 lg:w-72">
                 <strong className="block text-sm">Bewusste Grenzen</strong>
                 Keine zentrale Datenbank, Produktpersistenz, produktive ID-Vergabe, LCMD-API,
-                PDF-Ausgabe oder Rueckfluss. Firma und Abweichung sind sichtbar als Mock-Felder
-                gekennzeichnet. Kartenpool 0..63485, Tafelmarker 63486..64509.
+                produktiver PDF-Export oder Rueckfluss. Kein Writeback und keine validierte laufende
+                Synchronisierung. D04-001..D04-050 sind ausschliesslich stabile
+                Demo-Bootstrapschluessel, keine LCMD-Prozess-IDs. Der technische Testdruck stammt
+                aus dem kanonischen 50-Vorgaenge-Vertrag.
               </div>
             </div>
           </section>

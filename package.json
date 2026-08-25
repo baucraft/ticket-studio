@@ -16,6 +16,7 @@
     "demo:generate": "tsx scripts/generate-hausmesse-demo.ts",
     "target:assets": "node scripts/generate-tag-only-assets.mjs",
     "target:assets:verify": "node scripts/verify-tag-only-assets.mjs",
+    "target:print": "tsx scripts/generate-tag-only-print.ts",
     "preview": "vite preview"
   },
   "dependencies": {

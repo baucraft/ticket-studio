@@ -1,18 +1,27 @@
 {
-  "schemaVersion": "demo04-tag-only-assets-v1",
-  "scope": "synthetic_non_product_target_picture",
-  "family": "tagCircle49h12",
+  "schemaVersion": "demo04-tag-only-assets-v2",
+  "scope": "synthetic_non_product_preflight",
   "format": "deterministic_svg_1_1",
+  "fixtureVersion": "2026-08-25.1",
+  "fixtureSha256": "4f165dcdffb1b0659670b0f83208a367ee0b428b5daa132e53e971e0aa13896f",
+  "canonicalSource": {
+    "path": "src/data/demo-04-synthetic-activities.v1.json",
+    "sha256": "4f165dcdffb1b0659670b0f83208a367ee0b428b5daa132e53e971e0aa13896f"
+  },
   "markerSizeDefinition": "outer_edge_of_official_family_raster_excluding_external_quiet_zone",
   "quietZoneModulesPerSide": 1,
   "officialProvenance": {
     "assetRepository": "https://github.com/AprilRobotics/apriltag-imgs",
     "assetCommit": "f3fd9a7add5bfd82a886fc65240fdb8e3c9ac5a1",
-    "assetFamilyTreeGitSha1": "52cc190bc5d2824afd5f3fb908283d71de86fc6a",
+    "assetFamilyTreeGitSha1": {
+      "tagCircle49h12": "52cc190bc5d2824afd5f3fb908283d71de86fc6a",
+      "tagStandard52h13": "eddc1dd85b74f711d8a07b82e326f12d00bf155c"
+    },
     "license": "BSD-2-Clause"
   },
   "assets": [
     {
+      "family": "tagCircle49h12",
       "tagId": 0,
       "role": "card",
       "status": "active",
@@ -23,6 +32,7 @@
       "svgSha256": "48ae2c4c8cf4b2a3246506e037c3cb874cc4be77d2e0aa6295044af9f31ec6b2"
     },
     {
+      "family": "tagCircle49h12",
       "tagId": 1,
       "role": "card",
       "status": "done",
@@ -33,6 +43,7 @@
       "svgSha256": "8f2619f71a101af993c35711f85da97799a0a7ca133dfb2f54fdba778b9403c0"
     },
     {
+      "family": "tagCircle49h12",
       "tagId": 74,
       "role": "card",
       "status": "active",
@@ -43,6 +54,7 @@
       "svgSha256": "ca488f6e4e0633603e20547d02dd8bcdb520fe0cfefeea9d322d97000f82a651"
     },
     {
+      "family": "tagCircle49h12",
       "tagId": 75,
       "role": "card",
       "status": "done",
@@ -53,6 +65,7 @@
       "svgSha256": "7200775d8e78481bbea6573d539f164309a45f39d9bc83cec0982ecb73b542b5"
     },
     {
+      "family": "tagCircle49h12",
       "tagId": 1024,
       "role": "card",
       "status": "active",
@@ -63,6 +76,7 @@
       "svgSha256": "7ff98024bf5a80315c792f4c80dcdfed786d6cff35d1b52f005def116e927f14"
     },
     {
+      "family": "tagCircle49h12",
       "tagId": 1025,
       "role": "card",
       "status": "done",
@@ -73,6 +87,7 @@
       "svgSha256": "e86540375c796b9b94e3f9b16792c6d541bb8741df83e9604c174f1807e25b07"
     },
     {
+      "family": "tagCircle49h12",
       "tagId": 4096,
       "role": "card",
       "status": "active",
@@ -83,6 +98,7 @@
       "svgSha256": "ac1b9ced79fbe116c965cccddaae0e13d6e0b1b354d57b7376b22d8965b81093"
     },
     {
+      "family": "tagCircle49h12",
       "tagId": 4097,
       "role": "card",
       "status": "done",
@@ -93,6 +109,315 @@
       "svgSha256": "de2f46bcc6bf5976ab5064d7119bce8f7be558a0c226a2d76976e4764c93d41e"
     },
     {
+      "family": "tagCircle49h12",
+      "tagId": 200,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00200_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00200.png",
+      "sourcePngSha256": "430fbb753ad8311ce5c22da3cf4660c90b0883cca996802307b0d0f3889692a8",
+      "svgSha256": "561c9788237d0954dc2865813d6043daa574e194f21b17ebc602c90c7632fa3a"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 201,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00201_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00201.png",
+      "sourcePngSha256": "6acc67fee86add76db79bd228fbde0250c5b76f0f2e49bc70f23b188621335e1",
+      "svgSha256": "80394f04cd39c4cef154dcc4e5aa851433d2369c863ee51ce8f7dfe1f0b6f507"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 202,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00202_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00202.png",
+      "sourcePngSha256": "88efb16691212256c8ed17fca1fb3a33a2cbfa7e780a268d01377d8065e1c35a",
+      "svgSha256": "a6c198f4ab8bf8133e1423c5fbdfdcbf0e3f419252f7178d8a3449e39637dbc6"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 203,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00203_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00203.png",
+      "sourcePngSha256": "5add614d10e26e4700c8dd4dedbcbaef24d4ae04656828a1b4c7bceef17b8e34",
+      "svgSha256": "14352363903ee5e5ce023e7f275374a1e76197f4c10a19719ceb230d835caee1"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 204,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00204_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00204.png",
+      "sourcePngSha256": "eac8cc5d12332b2c7e938bcac34c0f212764698829645acdfa9e4927b2d8cfed",
+      "svgSha256": "3dffff4b1babe2c6109837c32575c185d998730796ca249c02c052a2f5a6e494"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 205,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00205_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00205.png",
+      "sourcePngSha256": "0dbb37f2b2c754766477582d73c632fbc1036dd9b51abb8833fe399d635a17ee",
+      "svgSha256": "dc4af518cd6c1dfd19f052ea4dbc784bb6722e324127c867cc58a05b42491bd5"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 206,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00206_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00206.png",
+      "sourcePngSha256": "02de679050598fee80641b8f58e06211dea4ea8056e56c2af50d8dd7249b4b0e",
+      "svgSha256": "d1f0021b5034591f1ee31f2e26dec5c97b456aa7e263d7075dd6b581b17f7fd5"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 207,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00207_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00207.png",
+      "sourcePngSha256": "836c8405403518eccda413faa5870e3b8f7903e3b7b2ff7c152171ba16e3581d",
+      "svgSha256": "10698cb286fe198f9ff46de37bad23a69e67004fb54fea3ccaa8c41c36dfb93e"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 208,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00208_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00208.png",
+      "sourcePngSha256": "0569a1c0caafa661d17488ea63d5fc3aa8673fbc68660a115a95bc6ea35b0391",
+      "svgSha256": "2c12af5837f87a6772ac187f950150d56315e61a26e9f41316830ae4ee44f60f"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 209,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00209_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00209.png",
+      "sourcePngSha256": "400eb21759146b90814060e4d2c0fea1911ba5bc6b35bf0587db166cbd6319f2",
+      "svgSha256": "5c1dbe5838413a180413f4fa5cd627c622f79f6c2288f9ae3d725522d2ef6dac"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 210,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00210_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00210.png",
+      "sourcePngSha256": "41dee6455322ecd5498beb96a1eb39138fc34d731bc3312d899fc0e855347e73",
+      "svgSha256": "a77fb4af466d36b7f21ad126df9128d2291fbe0924e21e0b44da3e0fd2946938"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 211,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00211_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00211.png",
+      "sourcePngSha256": "16393ec9e7cde7ad64eed3739f37b584a3719220f12dd79770c244a6e9b28950",
+      "svgSha256": "1fa92f162b265e1611f3df60674cc1832c60ae3bd8f8569cf7c0747443e5b31b"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 212,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00212_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00212.png",
+      "sourcePngSha256": "2b4bb80ce94a4658f3c4718840d08045f97ce2befcf3425c77d112d848a6d5af",
+      "svgSha256": "eb008669507122f4cb046048fca7bc1705acd707b9ff4cc014aad2872462d2ce"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 213,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00213_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00213.png",
+      "sourcePngSha256": "8fa33c468952f0ed686033a86aae49978171631b13a7599abdf865089e28a78a",
+      "svgSha256": "f4fd4a3b821f8ddeaf9c93a446df8008aa3c1e825ed26e3ae59a9ce4d861aa4f"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 214,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00214_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00214.png",
+      "sourcePngSha256": "e05208e114d642e12fa2823cc50705a6a642b02d73e584a672e9a7de37052ee3",
+      "svgSha256": "a48c5b665af212d39ff6c00142b9fe5c00706d44e9a8b3e6a2c7a33ed1dcd25f"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 215,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00215_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00215.png",
+      "sourcePngSha256": "d1de8273073f21e375b1eb949ae2f76adf7c803e3216c015ff2a90bc12e50630",
+      "svgSha256": "67e74b1c9ba9065065dde1872da124ea0e4b9b71dc1a71e477bc0978d8901719"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 216,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00216_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00216.png",
+      "sourcePngSha256": "bf0c57b54366e3208c8eca4634d1aef8d4c97475ee596eef01f41a38215c1a87",
+      "svgSha256": "92a2f8fc944544e2f8e0043a4d9a246398807dfe651aa687128c640f71fb0733"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 217,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00217_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00217.png",
+      "sourcePngSha256": "e38d7965305b9ab8cb0e26c8c24de481756359b72610e757e1021b1434a8aa12",
+      "svgSha256": "69bf7a82a0104b5f8d662c9c04b73c1177b738a7e4257b8c103edfba2b6f8328"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 218,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00218_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00218.png",
+      "sourcePngSha256": "801e855d3b47c65ba52829721b51cabfbbd1fab15ec93a39a7698ebe8c9bfde0",
+      "svgSha256": "418ceb00e9555624bcf6a3d0c442aae87b28602665c3e9b5a1f5da8734dd4d5b"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 219,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00219_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00219.png",
+      "sourcePngSha256": "7ba8eff380cb9c04b6485a6099e6eab42538121f77397e9fd1ef65e886237480",
+      "svgSha256": "1b2d362f311df68ab91fab5b62df55bcd3f8be46d8ec16f963b6aff92b8e8438"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 220,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00220_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00220.png",
+      "sourcePngSha256": "efa5d1b064535dbcbb13be689909d68a8dd298bb4def645dd6836b381f858341",
+      "svgSha256": "693e68a675f5c2b8176d7b1e178b7b3fe9ddc44dd443037a640f247ebfa6cad4"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 221,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00221_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00221.png",
+      "sourcePngSha256": "ae40c903c154f9d14559af2e0d3ed994f95c18241b5ba4d12abbc87256609650",
+      "svgSha256": "25b4447fdce676abed239e4eb9fb5f76147c5ac8627fd836e2b331b87410b6d9"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 222,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00222_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00222.png",
+      "sourcePngSha256": "36198bf5185cfab7382ffd20bf2b8869db8692323cced4a2ed9627b4ba29d627",
+      "svgSha256": "d1e93ae0c0392cf808774f8d15ddac6d3992a3eb8ff74ff64fc3148e7351bc8d"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 223,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00223_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00223.png",
+      "sourcePngSha256": "c846ce938729e30627e55761c329471025f046ac41dd166c0b514476ecd855f2",
+      "svgSha256": "2936b3e6116c5de7f0a37b4856105f37bd94ca059feae83eb27c1bbaa1f4cda0"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 224,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00224_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00224.png",
+      "sourcePngSha256": "6983a4de346522da6c1067500053b7367ce5f04349ef99db92add8ee5c75fb60",
+      "svgSha256": "fd92d67352accdfb1814386a62bfb4f97bb37c8cdd05d2c047a05929fccc79c6"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 225,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00225_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00225.png",
+      "sourcePngSha256": "819843110f62a0b05f6861e9404c10f11c996b2623acf0cbfb556e639d0fe45d",
+      "svgSha256": "10e040836075f59851935c8b193fb7005e6a2470db30d35b89f91cafe5562dbd"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 226,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00226_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00226.png",
+      "sourcePngSha256": "9953a035df8b03b73719fb34bfd1437d40d92865093631478b36281fba674c9b",
+      "svgSha256": "f475c52e1176218c069cf2c6685ffaa25fabb4e7712c525cd939c91631d6ebc3"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 227,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00227_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00227.png",
+      "sourcePngSha256": "eaca8923da54eb63a2652cd5d64f9520a0ecb1c0bbe210fc754a606ecc67118a",
+      "svgSha256": "12f70f7a68df7f13395be33ef390828efddf38a4a009edd55ae63c8e0be85024"
+    },
+    {
+      "family": "tagCircle49h12",
       "tagId": 8192,
       "role": "card",
       "status": "active",
@@ -103,6 +428,7 @@
       "svgSha256": "1436d55e137f2b106fe0a5733aa33bc62f8df151d7d2306b6c1f26e32a57185c"
     },
     {
+      "family": "tagCircle49h12",
       "tagId": 8193,
       "role": "card",
       "status": "done",
@@ -113,6 +439,7 @@
       "svgSha256": "13e2b0b4557ca28075a26d0d98a657f909526ebbc5084b924b2906b9404ca9fc"
     },
     {
+      "family": "tagCircle49h12",
       "tagId": 24000,
       "role": "card",
       "status": "active",
@@ -123,6 +450,7 @@
       "svgSha256": "bef620179a1abdbbcb945998ef29c7f641ddb4d900c2564a678f0edec211c2a8"
     },
     {
+      "family": "tagCircle49h12",
       "tagId": 24001,
       "role": "card",
       "status": "done",
@@ -133,6 +461,315 @@
       "svgSha256": "7b65f4680c2e2d5cabb45336a0f1d7228658e8b380665c6ca0096b78a3919583"
     },
     {
+      "family": "tagCircle49h12",
+      "tagId": 228,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00228_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00228.png",
+      "sourcePngSha256": "e412c031d2915f72ca6bb0e64430a52ea59cd4068d11cc114c74ba016876b0d1",
+      "svgSha256": "48c18d06edffe577f336a7c421f6b852e38e4381a95e2420247f731ebc2b5259"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 229,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00229_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00229.png",
+      "sourcePngSha256": "2d095e86848f072ddc1f6c2f6dea691449a74d72fbb97c3324a94c1f6a635924",
+      "svgSha256": "7e2136e1fc7e602e408ef6531372b54f3f51e4161941d8baa71e23594924733c"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 230,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00230_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00230.png",
+      "sourcePngSha256": "f3cb7604a86ffaab72d08a70855f782dbfdedc0196bcc61c5a5bea48b8d6386f",
+      "svgSha256": "04db27fb2fa496963d89f3ed04338b71a1ee9a1aa8a063685918317338db286a"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 231,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00231_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00231.png",
+      "sourcePngSha256": "e21239a109312c6cdb0b67beefc1f45d588780b1ecda843ae41517289cceb9a5",
+      "svgSha256": "da5a5316486aadbeb94d532f7dd99ea7e0e7b848e4befe31a61d2025d9aaa897"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 232,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00232_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00232.png",
+      "sourcePngSha256": "0236dff72d9cc32565c5b7522cd8dceffb88f44838408c8c00b0d04ae937f374",
+      "svgSha256": "6ce6df03fc3c95d078e36eb295596d493393e76af84b05b10a6198b7da241a68"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 233,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00233_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00233.png",
+      "sourcePngSha256": "516aab51da7bc6709a9ce1ad34eed55a97a62629b6f35c1df2531612fdff903c",
+      "svgSha256": "4356fb0e8456c9faa295069232fadaf3814837a2d6c49ab91b6e9a4e8c1494b2"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 234,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00234_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00234.png",
+      "sourcePngSha256": "98342baa2a183f9bcaf5525748addb98ae232e66a412564d94ba99023f41df45",
+      "svgSha256": "7898cd7187294cb595dba5d6ddc2c665eef34f670cca1c34ca57f40db4cb0bc3"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 235,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00235_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00235.png",
+      "sourcePngSha256": "98234e0f170ccf4ca498b2e31fcf6893d85cd0a9edda2e87049f30f24a533626",
+      "svgSha256": "9dd920f25b435691e0037312259b05be744acb90538589da958e61321cb06c8c"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 236,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00236_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00236.png",
+      "sourcePngSha256": "25424bdb850e3e1aa21acc0f27283b4fdd0991934ad24d8b1f3ade251edf7c5b",
+      "svgSha256": "e1d92ff3b7c1e8612e33859d6c15d4250f8eedf902c87deecd1ffe6279b10a01"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 237,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00237_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00237.png",
+      "sourcePngSha256": "a8c07c36d498a568ccaa2d87a4044a14e0316b4f6d17bc30cc6917a65c830c47",
+      "svgSha256": "c760fbb29d29699431bd87f2be7b13777ad3a018d81fbb9fc6dbf1da43ae00d6"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 238,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00238_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00238.png",
+      "sourcePngSha256": "005046f35300eea3c1e8627f33b586f40ccdb3188c68d909aec04d8ba787e16d",
+      "svgSha256": "a6cf1b16a37a884c4d1b028200fe1b210b3841a07b5262cb80c096f53448229b"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 239,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00239_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00239.png",
+      "sourcePngSha256": "1a81f0f397bc80daa702a4e506dc0a16f7bdbadf72c926caaf185d2a04b7ae0e",
+      "svgSha256": "7125c039721245b3472444486daeef2252669b6a3e9b35148c89b015b4b4ccc9"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 240,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00240_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00240.png",
+      "sourcePngSha256": "50f31c7df0e73dd82f909c9d4d4b1345d65ad81dce1255f063b156d14e45af24",
+      "svgSha256": "406562d715e1ad97b1147aedc944d71c2a969fc5d3a22b4d60ddd7909f18705f"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 241,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00241_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00241.png",
+      "sourcePngSha256": "0b80c998d0016de666d820b1ba91cb650a167b33f8320b8b5161fa72524d7637",
+      "svgSha256": "21b313770d08289572a1013acf64410aa76d10fc6c056cb6bd5ee1cb2e87be6e"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 242,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00242_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00242.png",
+      "sourcePngSha256": "41af44d472182b42ded33eb9faf9c1fbb806859d16748a0ad2d21cf9c1d9734b",
+      "svgSha256": "fd7733cc82489d97a453507fdc61351be2b659c13d8da87635894810136cc646"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 243,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00243_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00243.png",
+      "sourcePngSha256": "1e9711502ee6006e763c468ad15c9441dc6f6e0eba6adba8e5585caed93dec53",
+      "svgSha256": "769d2ef7f47d70645b1682bf5a9f89066839a218c67defcf11e839e742c1419d"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 244,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00244_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00244.png",
+      "sourcePngSha256": "9f15ecec62535bcabb5c050701492695b9212687062d353f6e0fad6867c45897",
+      "svgSha256": "61126089d5835f9f8c20961d79b2f9dd4c05e1090b50adae35fe8365113bc49b"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 245,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00245_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00245.png",
+      "sourcePngSha256": "b718772bc978014f6f6f4b36ff3fa08f32b97ff9480720128fddc67349918196",
+      "svgSha256": "20312898cb370bebcb3bfd501dc04f4deee87925c391be6eb8344f4162704eee"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 246,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00246_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00246.png",
+      "sourcePngSha256": "a60bc72a049cb4ce31ff2da4e87cc6414fe6b79d2549520dea3b0b043b7acaca",
+      "svgSha256": "70211e6b4cf2c9510364190824a461a4aa6e20be4b1780e014bae69f0c86c5bb"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 247,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00247_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00247.png",
+      "sourcePngSha256": "d2f530b92b474a803c1e6de575128b234f252b23985ae5885b0bac185e465571",
+      "svgSha256": "e3f18466f64f48a0d32b8bd70ad79ab84c25674739200c7b473bd45e0ad7c987"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 248,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00248_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00248.png",
+      "sourcePngSha256": "5d8c7e82c7ce47c5bd5489108297ac0fc76bf01d370fecdfe0d3b828b9c9c877",
+      "svgSha256": "4f486db5931671178ca5ac6ca70d55c86badf683a0a0516f87dbb79118dde7fb"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 249,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00249_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00249.png",
+      "sourcePngSha256": "4e9d079d803cb36729cf8cf2316a55ac7285be6c7a5c2a76e9b95a6f45dc911a",
+      "svgSha256": "38de57b882e1261a18c10b76bac275b7d81bfd804e0f648295083fe109efbe2a"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 250,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00250_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00250.png",
+      "sourcePngSha256": "c1732eae60dac5c2fcc1b562ba6697dcd134c8fe43aa62e7f6fa778a197468e2",
+      "svgSha256": "5a00c8ed2741a3aba55b6a978f5b37fc30f15e07f0676db7c928e3009d32a180"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 251,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00251_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00251.png",
+      "sourcePngSha256": "7c573649c3ae2896e504bf4402211c1a704337c514cb01cb81f1e5a3f40c6dcc",
+      "svgSha256": "9347029b77cb84ca4f782a3a47689f0368834a4bcf593b7b1ad4aada7a8924d0"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 252,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00252_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00252.png",
+      "sourcePngSha256": "2b8fdee87e123236157394b1ff6b3b629716aa28ea5e21ac17eb02d3a75db956",
+      "svgSha256": "dd255fdd93e9b5b963154c6bfb7ec2524127f44d0e0193d9138a86d40ac198aa"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 253,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00253_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00253.png",
+      "sourcePngSha256": "8e78ba16ae9e91e1333d78be7aa4a186d44ef3164b0e8557b694750ade9f186b",
+      "svgSha256": "d9324146f71f309517788a3c025aa4e3ee99b88e8e8542269e522b6f9db8eeb3"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 254,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00254_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00254.png",
+      "sourcePngSha256": "4a8c4082b635c2d01a156ef980273d9c97b1a96926207c9272ff0947365fb76d",
+      "svgSha256": "4cd67be3ddc2ad9ecb93bdeea21e2d5a4b7c40e982488a541b61b837615bee37"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 255,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00255_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00255.png",
+      "sourcePngSha256": "f5e81b0301c771f8909837f91d725a26b90448be3dea36a692b05ce43b3c983e",
+      "svgSha256": "cacbe32aa4f60455c8ca5a7a9b03bfeadb4b23d85c568f01f4ff69d9e1800a93"
+    },
+    {
+      "family": "tagCircle49h12",
       "tagId": 40000,
       "role": "card",
       "status": "active",
@@ -143,6 +780,7 @@
       "svgSha256": "33245fb9add9b6eaa7d6e2e30e798340d6988db89576df8a25782f004971064d"
     },
     {
+      "family": "tagCircle49h12",
       "tagId": 40001,
       "role": "card",
       "status": "done",
@@ -153,6 +791,7 @@
       "svgSha256": "6c2e759262927438ab081364911fb1851a1022bc142d172f8d395399a1da0067"
     },
     {
+      "family": "tagCircle49h12",
       "tagId": 63484,
       "role": "card",
       "status": "active",
@@ -163,6 +802,7 @@
       "svgSha256": "c139a800fd210250df460055beaf1a3a47bda65abdbe09affdc1b8ee2d92ee6f"
     },
     {
+      "family": "tagCircle49h12",
       "tagId": 63485,
       "role": "card",
       "status": "done",
@@ -173,6 +813,315 @@
       "svgSha256": "747a549c35d9d6ef714e80266a3d113b3a8ddcda967ce9791b5ba72f0d8e7702"
     },
     {
+      "family": "tagCircle49h12",
+      "tagId": 256,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00256_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00256.png",
+      "sourcePngSha256": "a2a2acdafd6024ce6657a65e803c7ad9052b975a327ef705c1160daae0258dbc",
+      "svgSha256": "4da0d831ed83de573d07f9a787a2a43183bd255aa33fd657bcefd9b6d7e9a5ef"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 257,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00257_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00257.png",
+      "sourcePngSha256": "3ee03956ed3ea18380eb7ab52fd8e52c2f977a05f2d8b68064d632a3d01cb05b",
+      "svgSha256": "7188f3fcb661b82b8c5dd43993afecbce07d1e774d5d1c68334983435b4eaef3"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 258,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00258_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00258.png",
+      "sourcePngSha256": "97b4b14f60c4fda30e7e2fbfe356adc2f0ac84333f2890a353540ac6d14df7b8",
+      "svgSha256": "2da17330e87245dade0cc8a8306826dfba2a15b95564ce73e3d562e1e94cf759"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 259,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00259_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00259.png",
+      "sourcePngSha256": "4bf103b79dfd2abc21cff96fd1ec1e736a82b5c3977cde6e672ef0da02ed35ef",
+      "svgSha256": "84c62d3eba5339bee497d56017369acd1c90f3ce144e24441843400db0b444ea"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 260,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00260_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00260.png",
+      "sourcePngSha256": "511ddc26ce2490712585cd19285d90d3ae05e8f28643abd3e2f0b519acff8804",
+      "svgSha256": "4692e910f4bb07b9bc2787d115e806f2d013b676efd606cffdc2cda69c3922bb"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 261,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00261_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00261.png",
+      "sourcePngSha256": "87b4ec56f32635104ce690d0bbf72ae4575b8f1b70beb1edcbca7ec23ee06d3b",
+      "svgSha256": "568c6ee11c139ae1d554dbe0dff284026883fe8b316e4ae81de5b358a059472f"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 262,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00262_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00262.png",
+      "sourcePngSha256": "61b70d29abe1e54ed917ee8a4e7d20ff0e8a9a0a88dd94e37fd3123103241f6c",
+      "svgSha256": "b5ca62be71655b0cbd80a97183dfd5d9739d076ea0ab94e99a74f44259d34905"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 263,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00263_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00263.png",
+      "sourcePngSha256": "6380c7c701939a261afc5fd9913be734c616a4944cbaf59c275274dbd83582cf",
+      "svgSha256": "bb7375fe87e0375743d8543d8be84dcf4b8c8afffb8602f083f6fede94016dee"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 264,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00264_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00264.png",
+      "sourcePngSha256": "8c7b69e55c07597470595920cf79d4e3459ef889a8ed35435639cf49b4b22aa3",
+      "svgSha256": "3688c7728b899a341719963cf05e6cb5dbc5d9e00c0f135de150baf24f793f81"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 265,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00265_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00265.png",
+      "sourcePngSha256": "ebc5a0360a0c192802abd5539eeb8f52fb03b72e7284e0796edf434565e46413",
+      "svgSha256": "bf5532ad8ef1ba4135cee36143204a21328eba796c236422be5a232095490239"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 266,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00266_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00266.png",
+      "sourcePngSha256": "a33e93a847036a5647009aef381a0ae46d3f12c584871923d986fca909203601",
+      "svgSha256": "475073ffaa48a7da5329b04d10aa19d1292f9280afea8e497cab94bf296ce388"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 267,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00267_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00267.png",
+      "sourcePngSha256": "3d0b6947a5ded90a55d2a258a5522e7d3529d3ffd87ecfb6583b981a7cf6b238",
+      "svgSha256": "6cdb15cc1f80ec35f719d20b6207d82004b40b4280d8a10d8c936995e6132e67"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 268,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00268_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00268.png",
+      "sourcePngSha256": "d725df9b630f4fdb123062104999f1607b3b0efb7b5b943b770a8dfefd114c55",
+      "svgSha256": "f25d2c52085609cb71143aa8843d980beb9176979ec597eb4ebb7c7c5b8fe1aa"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 269,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00269_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00269.png",
+      "sourcePngSha256": "660b792decd21c101b6934ddbc09b1a356bb74b7f7cfb3680c240edb33722e08",
+      "svgSha256": "59be2c17c168791bc1df71addb1348731168fb0926a6014998ae525d162141d1"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 270,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00270_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00270.png",
+      "sourcePngSha256": "91fc75f452bebcd2656541aebb7b16ceef0d0d2d361657c23ca6e692918c1e29",
+      "svgSha256": "68f68213e69a904a5ae591687c6edde88b3a662a406bf4ae99f9e2e6dd62956a"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 271,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00271_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00271.png",
+      "sourcePngSha256": "4ad479d81ecc496893ef2eb76be027ec76d33575a5f16bc15c44a87ebc34f7ae",
+      "svgSha256": "bc19e364ea5b827f026d3fb98bd9588e59f58ad3095d6f0d20c4166c908034f8"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 272,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00272_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00272.png",
+      "sourcePngSha256": "0879127ae9a98b176a066d3c19f3583369d9ad491d19bd07e022ed044adac906",
+      "svgSha256": "15930870882e75e88c30cd3d32ec3ec6ad58d61585c26b23050c6f0ebd9737be"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 273,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00273_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00273.png",
+      "sourcePngSha256": "3ef1d711599e2fa770a3ebe564822bc530e9114f06df3f8e82d6d34f4436d97f",
+      "svgSha256": "9ea603688ef99ebe1b09d10d91a67a48af51de83775911d9824201b640a420f1"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 274,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00274_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00274.png",
+      "sourcePngSha256": "2c7ad65ee48fe6e3f4f5e6725c5c4ff58a2ba887d89aabadcc06ec31b17d1e37",
+      "svgSha256": "da68340e025331353cb959fff22ddf49cab0ca0fc4578a2de09f888dddb8a982"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 275,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00275_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00275.png",
+      "sourcePngSha256": "b8933228edffd44d664d3290f133fddd9c70e506a83ed9ebe0d49f0eb096b32a",
+      "svgSha256": "41a9f13e81b2f0ad917bd17cbd3f5e502665d693e933cc5f247281ea9315420d"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 276,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00276_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00276.png",
+      "sourcePngSha256": "9cf7d2a171215528d7dd70f3bd89785d06a94fc637f3f9a41bfe3a99482093e8",
+      "svgSha256": "bd922800ca8799317d5d212b7a604aed1005b99d7a6d732c7f78874b0baab60f"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 277,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00277_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00277.png",
+      "sourcePngSha256": "cd0058458755ee86388956203fc975f5a33e02aedc251385d165fe3fc9195de5",
+      "svgSha256": "7757c1d07d939517b33b13cc708eeb7d805120c46c852c5cbbe53a2ea7b218b7"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 278,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00278_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00278.png",
+      "sourcePngSha256": "1752985e82aa56290a2a2f08ce00931790af509b60d4a3cbe395d92d8857024e",
+      "svgSha256": "90d4846c44e6307227cdf7d3f2d2d0fe069cf8d1002a9daa155dec465d8d6b35"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 279,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00279_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00279.png",
+      "sourcePngSha256": "1a04982a104b28b78bbe645266568d9e300831724a6ecbaf28fbd8eaaf3de933",
+      "svgSha256": "5ac1bcd0d936176917c7c4c931134daf387fb58a597f25cc85d3be5dcf2764f1"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 280,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00280_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00280.png",
+      "sourcePngSha256": "39be8e3f9a6081b76f2fee45e1409c9c5917c42263151a21dfcb1f9472795d97",
+      "svgSha256": "10a6f0ed528a8e9813a8671eebd5902936ebefbd3f5db8074261f07082d3db60"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 281,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00281_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00281.png",
+      "sourcePngSha256": "b917ecf92ec1e3ae0d270198adb791323609da4442194a6155ba984c219f5c1a",
+      "svgSha256": "435946db4bd599e66ee687e3dfaca2860f474fe6850dffb7211eff445d23e26e"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 282,
+      "role": "card",
+      "status": "active",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00282_card_active_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00282.png",
+      "sourcePngSha256": "268f6ed940be8a37990fe474673e99e7c7d7dedad86b7cf6cd6e9be112f40804",
+      "svgSha256": "06ddb3abc3a7764e4b1f2c854300a3556061cce6571c50f423a0ebbb536ebf38"
+    },
+    {
+      "family": "tagCircle49h12",
+      "tagId": 283,
+      "role": "card",
+      "status": "done",
+      "markerOuterEdgeMm": 18,
+      "filename": "tagCircle49h12_id00283_card_done_18mm.svg",
+      "sourcePng": "tagCircle49h12/tag49_12_00283.png",
+      "sourcePngSha256": "5a06d8264213efe9316008b199860ab3574c5539c1704b3c201bc1a250a332fd",
+      "svgSha256": "7398cef537492a595fbca32c4dd2cbe7dff5d3de15175ee4eeb1c3f13a695ed8"
+    },
+    {
+      "family": "tagCircle49h12",
       "tagId": 63486,
       "role": "board",
       "status": null,
@@ -183,6 +1132,7 @@
       "svgSha256": "2f566bf776834379a6cf7d627803ef2c55413f0b09d986d30bbe3e401b7787b8"
     },
     {
+      "family": "tagCircle49h12",
       "tagId": 63487,
       "role": "board",
       "status": null,
@@ -193,6 +1143,7 @@
       "svgSha256": "e9ee780548fed57c5d7ba4ee34c23889bbf94e8c10f4f020f438385142804539"
     },
     {
+      "family": "tagCircle49h12",
       "tagId": 63488,
       "role": "board",
       "status": null,
@@ -201,6 +1152,28 @@
       "sourcePng": "tagCircle49h12/tag49_12_63488.png",
       "sourcePngSha256": "17cb871bb9ac323ae9b30026b355a378183100648bb82f0e0cf1f3f1599ba5ca",
       "svgSha256": "f5e93821e6b96d4c2b22a87c8511f31cc2a8fc8372e91b49a5c62549c133c106"
+    },
+    {
+      "family": "tagStandard52h13",
+      "tagId": 0,
+      "role": "reference",
+      "status": null,
+      "markerOuterEdgeMm": 18,
+      "filename": "tagStandard52h13_id00000_reference_18mm.svg",
+      "sourcePng": "tagStandard52h13/tag52_13_00000.png",
+      "sourcePngSha256": "9358900c0f4512e3c8abd5bfae93e30234194c7c24f2cc9c90c2e64316a8829d",
+      "svgSha256": "19086e5707a878a6da77d03e3e723eed4a7746eadfebb4878e47db784ffa56f7"
+    },
+    {
+      "family": "tagStandard52h13",
+      "tagId": 0,
+      "role": "reference",
+      "status": null,
+      "markerOuterEdgeMm": 16.363636363636363,
+      "filename": "tagStandard52h13_id00000_reference_module_matched.svg",
+      "sourcePng": "tagStandard52h13/tag52_13_00000.png",
+      "sourcePngSha256": "9358900c0f4512e3c8abd5bfae93e30234194c7c24f2cc9c90c2e64316a8829d",
+      "svgSha256": "8b1cb511d80779f97202e33b4467045c2f9eb87ab17e850b63d0b138b52c2cbd"
     }
   ]
 }
