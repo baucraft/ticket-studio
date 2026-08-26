@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto"
 import { execFile } from "node:child_process"
 import { lstat, open, readFile, rm } from "node:fs/promises"
 import { basename, dirname, join, resolve } from "node:path"
@@ -112,7 +113,10 @@ export type LcmdDemoBinding = {
   fixtureVersion: string
   canonicalSource: { path: string; sha256: string }
   sourceProjectId: string
-  sourceFiles: { processes: string; cards: string }
+  sourceFiles: {
+    processes: { name: string; sha256: string }
+    cards: { name: string; sha256: string }
+  }
   contract: {
     processRows: number
     cardRows: number
@@ -470,8 +474,14 @@ export function createLcmdDemoBinding(
     },
     sourceProjectId: selection.sourceProjectId,
     sourceFiles: {
-      processes: basename(sourceFiles.processes),
-      cards: basename(sourceFiles.cards),
+      processes: {
+        name: basename(sourceFiles.processes),
+        sha256: createHash("sha256").update(processBytes).digest("hex"),
+      },
+      cards: {
+        name: basename(sourceFiles.cards),
+        sha256: createHash("sha256").update(cardBytes).digest("hex"),
+      },
     },
     contract: {
       processRows: contract.processIds.size,
@@ -525,7 +535,7 @@ async function nearestGitRoot(path: string): Promise<string | null> {
   }
 }
 
-async function assertNotVersionedPath(path: string, label: string): Promise<void> {
+export async function assertNotVersionedPath(path: string, label: string): Promise<void> {
   const gitRoot = await nearestGitRoot(dirname(resolve(path)))
   if (!gitRoot) return
   try {

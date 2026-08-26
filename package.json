@@ -17,6 +17,7 @@
     "demo:lcmd-bind": "tsx scripts/generate-lcmd-demo-binding.ts",
     "demo:lcmd-rebaseline": "tsx scripts/rebaseline-lcmd-demo.ts",
     "demo:lcmd-review": "tsx scripts/generate-lcmd-demo-selection-review.ts",
+    "demo:ana09d-manifest": "tsx scripts/ana09d-pilot-manifest.ts",
     "target:assets": "node scripts/generate-tag-only-assets.mjs",
     "target:assets:verify": "node scripts/verify-tag-only-assets.mjs",
     "target:print": "tsx scripts/generate-tag-only-print.ts",

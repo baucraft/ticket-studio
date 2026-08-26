@@ -116,8 +116,14 @@ describe("DEMO-04 read-only LCMD XLSX adapter", () => {
       sha256: expect.stringMatching(/^[0-9a-f]{64}$/),
     })
     expect(binding.sourceFiles).toEqual({
-      processes: "original-smoke-processes.xlsx",
-      cards: "original-smoke-cards.xlsx",
+      processes: {
+        name: "original-smoke-processes.xlsx",
+        sha256: expect.stringMatching(/^[0-9a-f]{64}$/),
+      },
+      cards: {
+        name: "original-smoke-cards.xlsx",
+        sha256: expect.stringMatching(/^[0-9a-f]{64}$/),
+      },
     })
     expect(binding.bindings).toHaveLength(50)
     expect(LCMD_DEMO_REBASELINE_SCOPE).toHaveLength(5)
