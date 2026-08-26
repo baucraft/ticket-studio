@@ -56,6 +56,12 @@ export type Ana09dBoardScope = {
 
 export type Ana09dBoardScopes = Record<string, Ana09dBoardScope>
 
+export type Ana09dManifestInput = {
+  revision: number
+  expectedCardIds: string[]
+  boardScopes: Ana09dBoardScopes
+}
+
 const BINDING_FIELDS = new Set([
   "schemaVersion",
   "scope",
@@ -78,6 +84,7 @@ const BINDING_ENTRY_FIELDS = new Set([
   "doneTagId",
 ])
 const SCOPE_FIELDS = new Set(["scopeType", "scopeLabel", "scopeFilter"])
+const MANIFEST_INPUT_FIELDS = new Set(["revision", "expectedCardIds", "boardScopes"])
 
 function hasExactFields(
   value: unknown,
@@ -252,6 +259,56 @@ export function validateAna09dBoardScopes(
   return scopes
 }
 
+export function validateAna09dManifestInput(
+  value: unknown,
+  fixtureValue: TagOnlyFixture = TAG_ONLY_FIXTURE,
+): Ana09dManifestInput {
+  const fixture = validateTagOnlyFixture(fixtureValue)
+  if (
+    !hasExactFields(value, MANIFEST_INPUT_FIELDS) ||
+    !Number.isSafeInteger(value.revision) ||
+    (value.revision as number) < 1 ||
+    !Array.isArray(value.expectedCardIds)
+  ) {
+    throw new Error("ANA-09D manifest input has an invalid revision or schema.")
+  }
+
+  const canonicalIds = fixture.activities.map((activity) => activity.demoActivityKey)
+  const selectedIds = value.expectedCardIds
+  const selectedSet = new Set(selectedIds)
+  if (
+    selectedIds.length < fixture.boards.length ||
+    selectedSet.size !== selectedIds.length ||
+    selectedIds.some((cardId) => !isExactString(cardId) || !canonicalIds.includes(cardId)) ||
+    canonicalIds
+      .filter((cardId) => selectedSet.has(cardId))
+      .some((cardId, index) => {
+        return cardId !== selectedIds[index]
+      })
+  ) {
+    throw new Error("ANA-09D expected card IDs must be a unique canonical-order subset.")
+  }
+  if (value.revision === 1 && selectedIds.length !== canonicalIds.length) {
+    throw new Error("ANA-09D revision 1 must retain the canonical 50-card G4 set.")
+  }
+  if (
+    fixture.boards.some(
+      (board) =>
+        !fixture.activities.some(
+          (activity) => activity.boardId === board.id && selectedSet.has(activity.demoActivityKey),
+        ),
+    )
+  ) {
+    throw new Error("ANA-09D expected card IDs must retain at least one card per board.")
+  }
+
+  return {
+    revision: value.revision as number,
+    expectedCardIds: [...selectedIds] as string[],
+    boardScopes: validateAna09dBoardScopes(value.boardScopes, fixture),
+  }
+}
+
 function worksheet(rows: Array<Array<string | number>>, expectedRange: string): XLSX.WorkSheet {
   const sheet = XLSX.utils.aoa_to_sheet(rows)
   sheet["!ref"] = expectedRange
@@ -271,19 +328,21 @@ function worksheet(rows: Array<Array<string | number>>, expectedRange: string): 
 
 export function generateAna09dPilotManifest(
   bindingValue: LcmdDemoBinding,
-  boardScopesValue: Ana09dBoardScopes,
+  manifestInputValue: Ana09dManifestInput,
   fixtureValue: TagOnlyFixture = TAG_ONLY_FIXTURE,
 ): Uint8Array {
   const fixture = validateTagOnlyFixture(fixtureValue)
   const binding = validateAna09dPilotBinding(bindingValue, fixture)
-  const boardScopes = validateAna09dBoardScopes(boardScopesValue, fixture)
+  const manifestInput = validateAna09dManifestInput(manifestInputValue, fixture)
+  const boardScopes = manifestInput.boardScopes
+  const expectedCardIds = new Set(manifestInput.expectedCardIds)
   const bindingByKey = new Map(binding.bindings.map((entry) => [entry.demoActivityKey, entry]))
 
   const manifestRows: Array<Array<string | number>> = [
     [...ANA09D_MANIFEST_HEADERS],
     ["schemaVersion", "ana09d-pilot-manifest-v1"],
     ["manifestId", "demo-04-pilot"],
-    ["revision", 1],
+    ["revision", manifestInput.revision],
     ["qualification", "G4_CONTROLLED_READ_ONLY"],
     ["projectId", "demo-04-pilot"],
     ["projectName", fixture.demoProjects[0].name],
@@ -318,30 +377,32 @@ export function generateAna09dPilotManifest(
   ]
   const cardRows: Array<Array<string | number>> = [
     [...ANA09D_CARD_HEADERS],
-    ...fixture.activities.map((activity) => {
-      const bindingEntry = bindingByKey.get(activity.demoActivityKey)!
-      return [
-        activity.demoActivityKey,
-        activity.demoActivityKey,
-        binding.sourceProjectId,
-        bindingEntry.sourceActivityId,
-        activity.boardId,
-        "active",
-        activity.activeTagId,
-        activity.doneTagId,
-        activity.company,
-        activity.trade,
-        activity.area,
-        activity.fullTarget,
-        activity.week,
-      ]
-    }),
+    ...fixture.activities
+      .filter((activity) => expectedCardIds.has(activity.demoActivityKey))
+      .map((activity) => {
+        const bindingEntry = bindingByKey.get(activity.demoActivityKey)!
+        return [
+          activity.demoActivityKey,
+          activity.demoActivityKey,
+          binding.sourceProjectId,
+          bindingEntry.sourceActivityId,
+          activity.boardId,
+          "active",
+          activity.activeTagId,
+          activity.doneTagId,
+          activity.company,
+          activity.trade,
+          activity.area,
+          activity.fullTarget,
+          activity.week,
+        ]
+      }),
   ]
 
   const workbook = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(workbook, worksheet(manifestRows, "A1:B20"), "Manifest")
   XLSX.utils.book_append_sheet(workbook, worksheet(boardRows, "A1:F4"), "Boards")
-  XLSX.utils.book_append_sheet(workbook, worksheet(cardRows, "A1:M51"), "Cards")
+  XLSX.utils.book_append_sheet(workbook, worksheet(cardRows, `A1:M${cardRows.length}`), "Cards")
   return XLSX.write(workbook, {
     type: "buffer",
     bookType: "xlsx",
@@ -367,18 +428,18 @@ async function readPrivateJson(path: string, label: string): Promise<unknown> {
 
 export async function writeAna09dPilotManifest(options: {
   bindingPath: string
-  scopesPath: string
+  manifestInputPath: string
   outputPath: string
 }): Promise<string> {
   assertLocalSuffix(options.outputPath, ".local.xlsx", "ANA-09D output")
   await assertNotVersionedPath(options.outputPath, "ANA-09D output")
-  const [binding, scopes] = await Promise.all([
+  const [binding, manifestInput] = await Promise.all([
     readPrivateJson(options.bindingPath, "ANA-09D binding"),
-    readPrivateJson(options.scopesPath, "ANA-09D board scopes"),
+    readPrivateJson(options.manifestInputPath, "ANA-09D manifest input"),
   ])
   const bytes = generateAna09dPilotManifest(
     validateAna09dPilotBinding(binding),
-    validateAna09dBoardScopes(scopes),
+    validateAna09dManifestInput(manifestInput),
   )
   const outputPath = resolve(options.outputPath)
   const handle = await open(outputPath, "wx", 0o600)
@@ -395,7 +456,7 @@ export async function writeAna09dPilotManifest(options: {
 }
 
 async function main(): Promise<void> {
-  const flags = ["--binding", "--scopes", "--output"] as const
+  const flags = ["--binding", "--manifest-input", "--output"] as const
   const values = Object.fromEntries(
     flags.map((flag) => {
       const index = process.argv.indexOf(flag)
@@ -408,12 +469,12 @@ async function main(): Promise<void> {
     new Set(process.argv.slice(2).filter((value) => value.startsWith("--"))).size !== flags.length
   ) {
     throw new Error(
-      "Usage: npm run demo:ana09d-manifest -- --binding <json.local> --scopes <json.local> --output <name.local.xlsx>",
+      "Usage: npm run demo:ana09d-manifest -- --binding <json.local> --manifest-input <json.local> --output <name.local.xlsx>",
     )
   }
   const outputPath = await writeAna09dPilotManifest({
     bindingPath: values["--binding"]!,
-    scopesPath: values["--scopes"]!,
+    manifestInputPath: values["--manifest-input"]!,
     outputPath: values["--output"]!,
   })
   console.log(`Generated private ANA-09D pilot manifest at ${outputPath}`)
