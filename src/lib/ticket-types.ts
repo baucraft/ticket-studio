@@ -4,7 +4,7 @@
  * - "planCards": Plan Cards export (Plankarten) - individual daily task cards
  * - "unknown": Unrecognized format
  */
-export type ImportSourceKind = "processPlan" | "planCards" | "unknown"
+export type ImportSourceKind = "processPlan" | "planCards" | "hausmesseDemo" | "unknown"
 
 export type TicketArea = {
   level1?: string
@@ -27,6 +27,16 @@ export type TicketData = {
   description?: string
   area?: TicketArea
   raw?: Record<string, unknown>
+  companyId?: number
+  tradeId?: number
+  numericTicketId?: number
+  payload?: string
+  isFinished?: boolean
+  dataMatrixPath?: string
+  dataMatrixRotatedPath?: string
+  activeAprilTagPath?: string
+  finishedAprilTagPath?: string
+  finishedAprilTagRotatedPath?: string
 }
 
 export type ImportTable = {

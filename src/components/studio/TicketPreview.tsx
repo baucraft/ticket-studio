@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
 import { TicketCanvas } from "@/components/ticket/TicketCanvas"
+import { HAUSMESSE_DEMO_TEMPLATE } from "@/lib/hausmesse-demo"
 import { useSelectedTicket, useStudioStore } from "@/state/studio-store"
 
 function Field(props: { label: string; value?: string; mono?: boolean }) {
@@ -28,6 +29,7 @@ function Field(props: { label: string; value?: string; mono?: boolean }) {
 export function TicketPreview() {
   const ticket = useSelectedTicket()
   const template = useStudioStore((s) => s.template)
+  const hausmesseDemoLoaded = useStudioStore((s) => s.hausmesseDemoLoaded)
 
   const previewFlipped = useStudioStore((s) => s.previewFlipped)
   const setPreviewFlipped = useStudioStore((s) => s.actions.setPreviewFlipped)
@@ -64,7 +66,7 @@ export function TicketPreview() {
         <div className="mt-3 rounded-lg border bg-muted/10 p-3">
           <div className="flex justify-center">
             <TicketCanvas
-              template={template}
+              template={hausmesseDemoLoaded ? HAUSMESSE_DEMO_TEMPLATE : template}
               ticket={ticket ?? undefined}
               scale={0.9}
               flipped={previewFlipped}

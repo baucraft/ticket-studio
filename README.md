@@ -16,6 +16,53 @@ Local-first ticket generator for planning boards. Upload Excel exports, customiz
 - **Ticket list** with thumbnails, grouping (company / trade / task), and preview
 - **PDF export** - Vector output (1 ticket per page, exact dimensions)
 
+## Hausmesse DEMO-02
+
+The Studio tab contains a controlled `Load demo` path for the wholly synthetic
+`hausmesse-demo-v1` data set. It generates exactly 14 cards from three fictional
+trades with seven initially active and seven initially finished cards. This path
+is a non-product demo field reference and does not freeze the later Gate G4
+production layout.
+
+Browser exports include the frozen input plan, exact card pages, an A4 print
+sheet, JSON and CSV manifests, and SHA-256 checksums. The same package can be
+generated without overwriting existing evidence:
+
+```bash
+npm run demo:generate -- --output-dir /tmp/hausmesse-demo-v1
+(
+  cd /tmp/hausmesse-demo-v1
+  sha256sum --check SHA256SUMS
+)
+```
+
+The output directory must not exist. Files are completed in a sibling staging
+directory and published together. The frozen input rejects unknown fields,
+changed records, duplicate IDs, invalid references and any card count other
+than 14 instead of inventing plausible data.
+
+Use `hausmesse-demo-v1-print-a4.pdf` for printing. Print at actual size (`100%`),
+disable `Fit to page`, and first measure the printed card and code dimensions:
+
+- card: `66 x 120 mm`
+- AprilTag: `9 mm`
+- DataMatrix: `11 mm`
+- code gap: `0.7 mm`
+
+The A4 file places up to four cards per page with 20 mm outer margins and crop
+marks. A physical printer/card-stock preflight is still required before using
+the cards on the demonstration board. The custom-size `cards.pdf` is the exact
+vector source and is not the preferred office-printer artifact.
+
+Each visible 30 mm card end uses a 6 mm solid trade-color band plus a 12% tint
+across the remaining header. The code label stays fully white, and the trade
+name remains visible as text so status interpretation never relies on color
+alone.
+
+Only the built-in synthetic plan is approved for this path. Current baseline
+dependency audit findings must be resolved before exposing the development
+server or accepting untrusted XLSX or SVG files as a production-safe workflow.
+
 ## Supported Excel Formats
 
 Example files are provided in the [`examples/`](examples/) folder.

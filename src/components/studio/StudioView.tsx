@@ -6,8 +6,12 @@ import { TicketList } from "@/components/studio/TicketList"
 import { TicketPreview } from "@/components/studio/TicketPreview"
 import { MappingDialog } from "@/components/studio/MappingDialog"
 import { ExportButton } from "@/components/studio/ExportButton"
+import { DemoExportButtons } from "@/components/studio/DemoExportButtons"
+import { useStudioStore } from "@/state/studio-store"
 
 export function StudioView() {
+  const hausmesseDemoLoaded = useStudioStore((state) => state.hausmesseDemoLoaded)
+
   return (
     <div className="grid gap-3 md:grid-cols-[320px_1fr_420px] md:h-full md:min-h-0">
       <div className="flex flex-col gap-3 md:min-h-0">
@@ -17,13 +21,23 @@ export function StudioView() {
           <div className="flex items-center justify-between gap-2">
             <div>
               <div className="text-sm font-medium">Actions</div>
-              <div className="text-xs text-muted-foreground">Export or adjust mappings</div>
+              <div className="text-xs text-muted-foreground">
+                {hausmesseDemoLoaded
+                  ? "Demo field reference, not a production layout"
+                  : "Export or adjust mappings"}
+              </div>
             </div>
           </div>
           <Separator className="my-3" />
           <div className="flex flex-wrap gap-2">
-            <ExportButton />
-            <MappingDialog />
+            {hausmesseDemoLoaded ? (
+              <DemoExportButtons />
+            ) : (
+              <>
+                <ExportButton />
+                <MappingDialog />
+              </>
+            )}
           </div>
         </Card>
 

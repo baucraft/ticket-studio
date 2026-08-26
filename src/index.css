@@ -137,3 +137,224 @@
       "Courier New", monospace;
   }
 }
+
+@layer components {
+  .tag-only-shell {
+    @apply space-y-4 pb-8 text-slate-900;
+  }
+
+  .tag-only-notices {
+    @apply z-30 grid gap-1 rounded-xl border border-amber-300 bg-amber-50/95 px-4 py-3 text-xs text-amber-950 shadow-sm backdrop-blur sm:sticky sm:top-0 sm:grid-cols-3 sm:items-center;
+  }
+
+  .tag-only-notices strong {
+    @apply font-semibold;
+  }
+
+  .tag-only-hero {
+    @apply grid gap-5 overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 p-5 text-white shadow-xl sm:p-7 lg:grid-cols-[1fr_auto] lg:items-center;
+    background-image: radial-gradient(circle at 15% 0%, rgb(14 165 233 / 0.22), transparent 38%);
+  }
+
+  .tag-only-kicker {
+    @apply text-xs font-semibold tracking-[0.22em] text-sky-300 uppercase;
+  }
+
+  .tag-only-hero h1 {
+    @apply mt-2 text-3xl font-semibold tracking-tight sm:text-4xl;
+  }
+
+  .tag-only-board-marker {
+    @apply flex min-w-64 items-center gap-4 rounded-xl border border-white/15 bg-white/7 p-4;
+  }
+
+  .tag-only-board-marker img {
+    @apply size-14 rounded-md bg-white lg:size-16;
+  }
+
+  .tag-only-board-marker__images {
+    @apply flex shrink-0 gap-1.5;
+  }
+
+  .tag-only-board-marker span,
+  .tag-only-board-marker small {
+    @apply block text-[10px] tracking-wide text-slate-400;
+  }
+
+  .tag-only-board-marker strong {
+    @apply my-1 block font-mono text-xl text-white;
+  }
+
+  .tag-only-state {
+    @apply flex items-center gap-2 rounded-xl border border-sky-200 bg-sky-50 p-4 text-sm text-sky-900;
+  }
+
+  .tag-only-controls,
+  .tag-only-list-panel,
+  .tag-only-preview-panel,
+  .tag-only-manifest {
+    @apply min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5;
+  }
+
+  .tag-only-controls {
+    @apply grid gap-4 lg:grid-cols-[220px_minmax(320px,1fr)_auto] lg:items-end;
+  }
+
+  .tag-only-contract-counts {
+    @apply grid grid-cols-[auto_1fr] items-baseline gap-x-2 gap-y-0.5 rounded-xl border border-sky-100 bg-sky-50 px-4 py-3 text-xs text-slate-600;
+  }
+
+  .tag-only-contract-counts strong {
+    @apply font-mono text-base text-sky-800;
+  }
+
+  .tag-only-workspace {
+    @apply grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(390px,0.9fr)];
+  }
+
+  .tag-only-section-title {
+    @apply mb-4 flex items-start gap-3;
+  }
+
+  .tag-only-section-title > span {
+    @apply font-mono text-xs font-medium text-sky-600;
+  }
+
+  .tag-only-section-title h2 {
+    @apply text-base font-semibold tracking-tight;
+  }
+
+  .tag-only-section-title p {
+    @apply mt-0.5 text-xs text-slate-500;
+  }
+
+  .tag-only-activity {
+    @apply flex items-center gap-3 rounded-xl border-y border-r border-slate-200 p-3 transition hover:bg-slate-50;
+    border-left: 4px solid var(--trade-color);
+  }
+
+  .tag-only-activity.is-preview {
+    @apply border-sky-400 bg-sky-50/60 shadow-sm;
+    border-left-color: var(--trade-color);
+  }
+
+  .tag-only-check {
+    @apply flex size-11 shrink-0 items-center justify-center rounded-lg bg-transparent text-white;
+  }
+
+  .tag-only-check__box {
+    @apply flex size-5 items-center justify-center rounded border border-slate-300 bg-white;
+  }
+
+  .tag-only-check.is-checked .tag-only-check__box {
+    @apply border-sky-600 bg-sky-600;
+  }
+
+  .tag-only-empty {
+    @apply flex min-h-44 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm text-slate-500;
+  }
+
+  .tag-only-card {
+    aspect-ratio: 66 / 120;
+    grid-template-rows: 27% 46% 27%;
+    @apply relative grid origin-center overflow-hidden rounded-sm border border-slate-400 bg-white shadow-[0_18px_50px_rgb(15_23_42/0.16)] transition-transform duration-500;
+  }
+
+  .tag-only-card__end {
+    grid-template-columns: minmax(0, 1fr) 82px;
+    border-color: var(--trade-color);
+    background: color-mix(in srgb, var(--trade-color) 10%, white);
+    @apply grid gap-3 px-5 py-3;
+  }
+
+  .tag-only-card__end--active {
+    @apply border-t-8;
+  }
+
+  .tag-only-card__end--done {
+    transform: rotate(180deg);
+    @apply border-t-8;
+  }
+
+  .tag-only-card__statusline {
+    @apply flex flex-wrap items-baseline gap-x-2 text-[9px] tracking-[0.12em] uppercase;
+  }
+
+  .tag-only-card__statusline strong {
+    color: var(--trade-color);
+    @apply text-[11px] tracking-[0.16em];
+  }
+
+  .tag-only-card__statusline span {
+    @apply text-slate-600;
+  }
+
+  .tag-only-marker {
+    @apply flex flex-col items-center justify-center self-center text-slate-950;
+  }
+
+  .tag-only-marker img {
+    @apply size-[68px] bg-white;
+  }
+
+  .tag-only-marker strong {
+    @apply mt-0.5 text-[10px];
+  }
+
+  .tag-only-marker span {
+    @apply text-[7px] text-slate-500;
+  }
+
+  .tag-only-card__middle {
+    @apply flex min-h-0 flex-col bg-white;
+  }
+
+  .tag-only-card__deviation {
+    background: color-mix(in srgb, var(--trade-color) 7%, white);
+    @apply border-y border-dashed border-slate-300 px-5 py-3 text-[11px] font-medium text-slate-700;
+  }
+
+  .tag-only-card__drawer {
+    @apply flex flex-1 flex-col bg-[linear-gradient(to_bottom,white_0,white_23px,#e2e8f0_24px)] bg-[length:100%_24px] px-5 py-4;
+  }
+
+  .tag-only-card__board-line {
+    top: 27%;
+    @apply pointer-events-none absolute right-0 left-0 z-10 border-t-2 border-dashed border-slate-500;
+  }
+
+  .tag-only-card__board-line span {
+    @apply absolute top-0 right-2 -translate-y-full bg-slate-700 px-1.5 py-0.5 text-[7px] font-medium tracking-wide text-white uppercase;
+  }
+
+  .tag-only-card.rotate-180 .tag-only-card__board-line {
+    top: auto;
+    bottom: 27%;
+    transform: rotate(180deg);
+  }
+
+  .tag-only-insertion-note {
+    @apply mt-3 grid gap-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-600;
+  }
+
+  .tag-only-insertion-note strong {
+    @apply text-slate-900;
+  }
+
+  .tag-only-trade-dot {
+    background: var(--trade-color);
+    @apply size-2.5 shrink-0 rounded-full;
+  }
+
+  .tag-only-manifest table {
+    @apply w-full min-w-[720px] text-left text-xs;
+  }
+
+  .tag-only-manifest th {
+    @apply bg-slate-50 px-3 py-2 font-semibold text-slate-600;
+  }
+
+  .tag-only-manifest td {
+    @apply border-t border-slate-100 px-3 py-3 align-top;
+  }
+}
