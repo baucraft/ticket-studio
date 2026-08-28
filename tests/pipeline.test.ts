@@ -2,7 +2,8 @@ import { beforeAll, describe, expect, it } from "vitest"
 
 import type { SheetJSImport } from "@/lib/sheetjs"
 import { aoaToImportTable, applyMapping, suggestMapping } from "@/lib/import-xlsx"
-import { renderTemplateString } from "@/lib/render-template"
+import { renderSvgTemplateString, renderTemplateString } from "@/lib/render-template"
+import { isLocalSvgReference, sanitizeSvgStyle } from "@/lib/sanitize-svg"
 
 let XLSX: SheetJSImport
 
@@ -31,6 +32,46 @@ describe("ticket pipeline", () => {
   it("renders Mustache tokens without HTML escaping", () => {
     expect(renderTemplateString("{{taskName}}", { taskName: "Walls & floors" })).toBe(
       "Walls & floors",
+    )
+  })
+
+  it("escapes spreadsheet values before inserting them into SVG markup", () => {
+    const payload = '</text><image href="https://invalid.example" onerror="alert(1)"/><text>'
+    const rendered = renderSvgTemplateString("<svg><text>{{{taskName}}}</text></svg>", {
+      taskName: payload,
+    })
+
+    expect(rendered).not.toContain("<image")
+    expect(rendered).not.toContain('onerror="')
+    expect(rendered).toContain("&lt;/text&gt;&lt;image")
+  })
+
+  it("removes spreadsheet interpolation from active SVG attributes", () => {
+    const rendered = renderSvgTemplateString(
+      '<svg><a href="{{{taskName}}}"><text>{{taskName}}</text></a></svg>',
+      { taskName: "javascript:alert(1)" },
+    )
+
+    expect(rendered).not.toContain("href=")
+    expect(rendered).not.toContain('href="javascript:')
+    expect(rendered).toContain("<text>javascript:alert(1)</text>")
+  })
+
+  it("allows only local SVG resources and inert presentation styles", () => {
+    expect(isLocalSvgReference("#local-gradient")).toBe(true)
+    expect(isLocalSvgReference("https://invalid.example/tracker.svg")).toBe(false)
+    expect(
+      sanitizeSvgStyle(
+        "fill:#fff;font-size:3px;position:fixed;fill:url(https://invalid.example/a.svg)",
+      ),
+    ).toBe("fill:#fff;font-size:3px")
+    expect(sanitizeSvgStyle("fill:url(#local-gradient);text-anchor:middle")).toBe(
+      "fill:url(#local-gradient);text-anchor:middle",
+    )
+    expect(sanitizeSvgStyle(String.raw`fill:u\72l(//invalid.example/a.svg)`)).toBe("")
+    expect(sanitizeSvgStyle("fill:/**/url(https://invalid.example/a.svg)")).toBe("")
+    expect(sanitizeSvgStyle('fill:url(#safe) url("https://invalid.example/a b.svg#filter")')).toBe(
+      "",
     )
   })
 

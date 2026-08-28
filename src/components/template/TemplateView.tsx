@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef } from "react"
 import { useDropzone } from "react-dropzone"
-import DOMPurify from "dompurify"
 import svgPanZoom from "svg-pan-zoom"
 import {
   AlertTriangle,
@@ -20,6 +19,7 @@ import { Card } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { DEFAULT_TOKENS } from "@/lib/default-template"
+import { sanitizeSvgMarkup } from "@/lib/sanitize-svg"
 import { useStudioStore } from "@/state/studio-store"
 
 export function TemplateView() {
@@ -51,11 +51,7 @@ export function TemplateView() {
   })
 
   // Sanitize SVG for display
-  const sanitizedSvg = DOMPurify.sanitize(template.svg, {
-    USE_PROFILES: { svg: true, svgFilters: true },
-    ADD_TAGS: ["use"],
-    ADD_ATTR: ["xlink:href", "href", "viewBox", "preserveAspectRatio"],
-  })
+  const sanitizedSvg = sanitizeSvgMarkup(template.svg)
 
   // Initialize svg-pan-zoom after SVG is rendered
   useEffect(() => {

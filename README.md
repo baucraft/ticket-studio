@@ -59,9 +59,12 @@ across the remaining header. The code label stays fully white, and the trade
 name remains visible as text so status interpretation never relies on color
 alone.
 
-Only the built-in synthetic plan is approved for this path. Current baseline
-dependency audit findings must be resolved before exposing the development
-server or accepting untrusted XLSX or SVG files as a production-safe workflow.
+Only the built-in synthetic plan is approved for this path. The browser
+production dependency audit is clean. The local LCMD adapter still uses legacy
+`xlsx@0.18.5`; until [issue 3](https://github.com/baucraft/ticket-studio/issues/3)
+is closed, it may parse only explicitly approved, access-restricted local
+exports and never arbitrary uploads, CI/service inputs, or email attachments.
+The development server must not be exposed as a production service.
 
 ## Supported Excel Formats
 
