@@ -1,6 +1,7 @@
 import type { SvgTicketTemplate } from "@/lib/template-types"
 import type { TicketData } from "@/lib/ticket-types"
-import { renderTemplateString } from "@/lib/render-template"
+import { renderSvgTemplateString } from "@/lib/render-template"
+import { sanitizeSvgMarkup } from "@/lib/sanitize-svg"
 import { wrapSvgText } from "@/lib/svg-text-wrap"
 import { mmToPx } from "@/lib/units"
 
@@ -26,7 +27,7 @@ export function TicketCanvas({
 
   // Render the SVG with Mustache to fill in ticket data
   // Ensure SVG has correct viewBox and fills container (SVG-Edit may strip viewBox)
-  const rawSvg = renderTemplateString(template.svg, ticket ?? {})
+  const rawSvg = renderSvgTemplateString(template.svg, ticket ?? {})
   // Apply text wrapping for elements with data-wrap-width attribute
   const wrappedSvg = wrapSvgText(rawSvg)
   const viewBox = `0 0 ${template.widthMm} ${template.heightMm}`
@@ -40,6 +41,7 @@ export function TicketCanvas({
   renderedSvg = renderedSvg
     .replace(/width="[^"]*mm"/, 'width="100%"')
     .replace(/height="[^"]*mm"/, 'height="100%"')
+  renderedSvg = sanitizeSvgMarkup(renderedSvg)
 
   return (
     <div
@@ -92,7 +94,7 @@ export async function renderSvgToDataUrl(
   ticket: TicketData,
   dpi: number = 300,
 ): Promise<string> {
-  const renderedSvg = renderTemplateString(template.svg, ticket)
+  const renderedSvg = sanitizeSvgMarkup(renderSvgTemplateString(template.svg, ticket))
 
   // Calculate pixel dimensions at the target DPI
   // 1 inch = 25.4 mm

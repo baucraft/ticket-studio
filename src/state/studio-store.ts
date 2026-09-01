@@ -1,11 +1,11 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { immer } from "zustand/middleware/immer"
-import DOMPurify from "dompurify"
 
 import { createHausmesseDemoImportTable, createHausmesseDemoTickets } from "@/lib/hausmesse-demo"
 import { applyMapping, readXlsxToTable, suggestMapping } from "@/lib/import-xlsx"
 import { DEFAULT_SVG_TEMPLATE } from "@/lib/default-template-svg"
+import { sanitizeSvgMarkup } from "@/lib/sanitize-svg"
 import type { ColumnMapping, ImportTable, TicketData } from "@/lib/ticket-types"
 import type { SvgTicketTemplate } from "@/lib/template-types"
 
@@ -230,11 +230,7 @@ export const useStudioStore = create<StudioState>()(
           }
 
           // 2. Sanitize SVG with DOMPurify
-          const sanitizedSvg = DOMPurify.sanitize(text, {
-            USE_PROFILES: { svg: true, svgFilters: true },
-            ADD_TAGS: ["use"],
-            ADD_ATTR: ["xlink:href", "href", "viewBox", "preserveAspectRatio"],
-          })
+          const sanitizedSvg = sanitizeSvgMarkup(text)
 
           // 3. Auto-detect dimensions from viewBox or width/height
           let widthMm = 70.19

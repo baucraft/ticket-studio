@@ -3,7 +3,8 @@ import "svg2pdf.js"
 
 import type { SvgTicketTemplate } from "@/lib/template-types"
 import type { TicketData } from "@/lib/ticket-types"
-import { renderTemplateString } from "@/lib/render-template"
+import { renderSvgTemplateString } from "@/lib/render-template"
+import { sanitizeSvgMarkup } from "@/lib/sanitize-svg"
 import { wrapSvgText } from "@/lib/svg-text-wrap"
 
 /**
@@ -64,10 +65,10 @@ export async function exportTicketsPdfBytes(params: {
     }
 
     // Render mustache template with ticket data
-    const renderedSvg = renderTemplateString(template.svg, ticket)
+    const renderedSvg = renderSvgTemplateString(template.svg, ticket)
 
     // Apply text wrapping for elements with data-wrap-width attribute
-    const wrappedSvg = wrapSvgText(renderedSvg)
+    const wrappedSvg = sanitizeSvgMarkup(wrapSvgText(renderedSvg))
 
     // Parse SVG string to element
     const svgElement = parseSvgString(wrappedSvg)

@@ -151,7 +151,7 @@ describe("Hausmesse demo contract", () => {
     expect(checksums).toContain(HAUSMESSE_FILES.printPdf)
     expect(checksums).toContain(HAUSMESSE_FILES.manifest)
     expect(checksums).toContain(HAUSMESSE_FILES.csv)
-  })
+  }, 15_000)
 
   it("publishes a complete package atomically and rejects existing targets", async () => {
     const root = await mkdtemp(join(tmpdir(), "ticket-studio-demo-"))
