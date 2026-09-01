@@ -3,7 +3,7 @@ import { execFile } from "node:child_process"
 import { lstat, open, readFile, rm } from "node:fs/promises"
 import { basename, dirname, join, resolve } from "node:path"
 import { promisify } from "node:util"
-import * as XLSX from "xlsx"
+import * as XLSX from "../public/vendor/xlsx-0.20.3.mjs"
 
 import {
   TAG_ONLY_CANONICAL_SOURCE_PATH,

@@ -1,7 +1,7 @@
 import { open, readFile, rm } from "node:fs/promises"
 import { basename, resolve } from "node:path"
 import { pathToFileURL } from "node:url"
-import * as XLSX from "xlsx"
+import * as XLSX from "../public/vendor/xlsx-0.20.3.mjs"
 
 import {
   TAG_ONLY_ASSET_MANIFEST_SHA256,

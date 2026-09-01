@@ -3,7 +3,7 @@
  * Run with: node scripts/create-examples.mjs
  */
 
-import * as XLSX from "xlsx"
+import * as XLSX from "../public/vendor/xlsx-0.20.3.mjs"
 
 // Helper to create Date objects (months are 0-indexed in JS)
 const d = (year, month, day) => new Date(year, month - 1, day)

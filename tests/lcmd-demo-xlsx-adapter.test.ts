@@ -3,7 +3,7 @@ import { execFileSync } from "node:child_process"
 import { chmod, mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import * as XLSX from "xlsx"
+import * as XLSX from "../public/vendor/xlsx-0.20.3.mjs"
 import { describe, expect, it } from "vitest"
 
 import {
