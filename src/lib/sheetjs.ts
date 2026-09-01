@@ -1,6 +1,3 @@
-const SHEETJS_VERSION = "0.20.3"
-const SHEETJS_CDN_URL = `https://cdn.sheetjs.com/xlsx-${SHEETJS_VERSION}/package/xlsx.mjs`
-
 export type SheetJSImport = {
   read: (
     data: ArrayBuffer | Uint8Array,
@@ -59,9 +56,5 @@ export async function getSheetJS(): Promise<SheetJSImport> {
     return cached
   }
 
-  // Vite should not attempt to prebundle this remote module.
-  const mod = (await import(/* @vite-ignore */ SHEETJS_CDN_URL)) as unknown as SheetJSImport
-  cached = mod
-  g.__sheetjs = cached
-  return mod
+  throw new Error("The vendored SheetJS loader is unavailable")
 }

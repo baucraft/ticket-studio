@@ -5,10 +5,14 @@ import react from "@vitejs/plugin-react"
 import tailwindcss from "@tailwindcss/vite"
 import { defineConfig } from "vite"
 
+const base = process.env.VITE_BASE_PATH ?? "/"
+if (!/^\/(?:[A-Za-z0-9._-]+\/)*$/.test(base)) {
+  throw new Error("VITE_BASE_PATH must be an absolute path ending in a slash")
+}
+
 // https://vite.dev/config/
 export default defineConfig({
-  // Base path: root for local dev, /ticket-studio/ for GitHub Pages production build
-  base: process.env.NODE_ENV === "production" ? "/ticket-studio/" : "/",
+  base,
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
