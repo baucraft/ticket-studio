@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run target:assets:verify && tsc -b && vite build",
-    "build:deployment": "npm run target:assets:verify && tsc -b && vite build --base / && node scripts/verify-deployment-build.mjs",
+    "build": "npm run target:assets:verify && npm run pilot:assets:verify && tsc -b && vite build",
+    "build:deployment": "npm run target:assets:verify && npm run pilot:assets:verify && tsc -b && vite build --base / && node scripts/verify-deployment-build.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier . --write",
@@ -21,6 +21,8 @@
     "demo:ana09d-manifest": "tsx scripts/ana09d-pilot-manifest.ts",
     "target:assets": "node scripts/generate-tag-only-assets.mjs",
     "target:assets:verify": "node scripts/verify-tag-only-assets.mjs",
+    "pilot:assets": "node scripts/generate-pilot-assets.mjs",
+    "pilot:assets:verify": "node scripts/verify-pilot-assets.mjs",
     "target:print": "tsx scripts/generate-tag-only-print.ts",
     "preview": "vite preview"
   },

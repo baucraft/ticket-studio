@@ -1,0 +1,15 @@
+{
+  "schema": "pilot-tag-codebook-v1",
+  "scope": "complete-official-family-for-backend-bound-ids-only",
+  "family": "tagCircle49h12",
+  "tagCount": 65535,
+  "bytesPerTag": 16,
+  "codebookSha256": "1dc1820062286679af9ba90bee19704a31a45e62ce2538ab1a368024c86a8587",
+  "quietZoneModulesPerSide": 1,
+  "officialProvenance": {
+    "assetRepository": "https://github.com/AprilRobotics/apriltag-imgs",
+    "assetCommit": "f3fd9a7add5bfd82a886fc65240fdb8e3c9ac5a1",
+    "assetFamilyTreeGitSha1": "52cc190bc5d2824afd5f3fb908283d71de86fc6a",
+    "license": "BSD-2-Clause"
+  }
+}
