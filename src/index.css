@@ -46,6 +46,10 @@
 
 :root {
   --radius: 0.625rem;
+  --pilot-touch-target: 2.75rem;
+  --pilot-section-gap: 1rem;
+  --pilot-panel-radius: 1rem;
+  --pilot-focus-ring: #0369a1;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -137,6 +141,41 @@
 }
 
 @layer components {
+  .pilot-navigation [data-slot="tabs-trigger"] {
+    min-height: var(--pilot-touch-target);
+  }
+
+  .pilot-workflow {
+    gap: var(--pilot-section-gap);
+  }
+
+  .pilot-workflow button,
+  .pilot-workflow input:not([type="checkbox"]),
+  .pilot-workflow select {
+    min-height: var(--pilot-touch-target);
+  }
+
+  .pilot-workflow input[type="checkbox"] {
+    width: 1.15rem;
+    height: 1.15rem;
+  }
+
+  .pilot-workflow :focus-visible,
+  .pilot-navigation :focus-visible {
+    outline: 3px solid var(--pilot-focus-ring);
+    outline-offset: 2px;
+  }
+
+  .pilot-workflow section,
+  .pilot-workflow article,
+  .pilot-workflow header {
+    border-radius: var(--pilot-panel-radius);
+  }
+
+  .pilot-workflow table {
+    overscroll-behavior-inline: contain;
+  }
+
   .tag-only-shell {
     @apply space-y-4 pb-8 text-slate-900;
   }
@@ -354,5 +393,25 @@
 
   .tag-only-manifest td {
     @apply border-t border-slate-100 px-3 py-3 align-top;
+  }
+}
+
+@media (max-width: 640px) {
+  .pilot-navigation {
+    width: 100%;
+    overscroll-behavior-inline: contain;
+  }
+
+  .pilot-workflow input:not([type="checkbox"]),
+  .pilot-workflow select {
+    font-size: 16px;
+  }
+
+  .pilot-workflow button {
+    width: 100%;
+  }
+
+  .pilot-workflow [role="alert"] button {
+    width: auto;
   }
 }

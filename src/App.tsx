@@ -1,5 +1,5 @@
 import { FileCode, LayoutGrid, Presentation, Workflow } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 import { StudioView } from "@/components/studio/StudioView"
 import { PilotView } from "@/components/pilot/PilotView"
@@ -9,8 +9,32 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function App() {
   const [tab, setTab] = useState("template")
+  const [pilotWorkflowActive, setPilotWorkflowActive] = useState(false)
 
   const scrollablePage = tab === "target" || tab === "pilot"
+
+  useEffect(() => {
+    const guardReload = (event: BeforeUnloadEvent) => {
+      if (!pilotWorkflowActive) return
+      event.preventDefault()
+    }
+    window.addEventListener("beforeunload", guardReload)
+    return () => window.removeEventListener("beforeunload", guardReload)
+  }, [pilotWorkflowActive])
+
+  const changeTab = (nextTab: string) => {
+    if (
+      tab === "pilot" &&
+      nextTab !== "pilot" &&
+      pilotWorkflowActive &&
+      !window.confirm(
+        "Der vorbereitete Pilotworkflow ist noch nicht abgeschlossen. Trotzdem verlassen?",
+      )
+    ) {
+      return
+    }
+    setTab(nextTab)
+  }
 
   return (
     <div
@@ -40,10 +64,10 @@ export default function App() {
 
         <Tabs
           value={tab}
-          onValueChange={setTab}
+          onValueChange={changeTab}
           className="mt-4 flex min-h-0 flex-1 flex-col gap-0"
         >
-          <TabsList>
+          <TabsList className="pilot-navigation max-w-full justify-start overflow-x-auto">
             <TabsTrigger value="pilot" className="gap-2">
               <Workflow className="size-4" />
               Pilot
@@ -67,7 +91,7 @@ export default function App() {
           </TabsContent>
 
           <TabsContent value="pilot" className="mt-4 min-h-0 flex-1">
-            <PilotView />
+            <PilotView onWorkflowActiveChange={setPilotWorkflowActive} />
           </TabsContent>
 
           <TabsContent

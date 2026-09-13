@@ -192,7 +192,11 @@ function Login({ onLogin }: { onLogin: (username: string, password: string) => P
   )
 }
 
-export function PilotView() {
+export function PilotView({
+  onWorkflowActiveChange,
+}: {
+  onWorkflowActiveChange?: (active: boolean) => void
+}) {
   const forecast = initialForecast()
   const [auth, setAuth] = useState<"checking" | "anonymous" | "authenticated">("checking")
   const [session, setSession] = useState<PilotSession | null>(null)
@@ -210,12 +214,14 @@ export function PilotView() {
     Parameters<PilotApi["activate"]>[1] | null
   >(null)
   const [physicalPlacementConfirmed, setPhysicalPlacementConfirmed] = useState(false)
+  const [scopeTouched, setScopeTouched] = useState(false)
   const [busy, setBusy] = useState("")
   const [notice, setNotice] = useState<Notice | null>(null)
   const [deltaPage, setDeltaPage] = useState(0)
   const workflowVersion = useRef(0)
   const scopeVersions = useRef<Record<string, number>>({})
   const activePrintRequests = useRef<Record<string, string>>({})
+  const noticeRef = useRef<HTMLDivElement>(null)
 
   const invalidatePreparedPlacement = () => {
     workflowVersion.current += 1
@@ -253,6 +259,7 @@ export function PilotView() {
     setPendingSync(null)
     setConfirmedRemoved([])
     setDeltaPage(0)
+    setScopeTouched(false)
   }
 
   const loadProject = async (nextProjectId = projectId) => {
@@ -269,6 +276,7 @@ export function PilotView() {
       setProject(state)
       setRevision(latestRevision)
       setScopes(latestRevision ? [boardScope(1, latestRevision)] : [])
+      setScopeTouched(false)
       if (latestRevision) {
         setForecastStart(latestRevision.source.forecastStart)
         setForecastEnd(latestRevision.source.forecastEnd)
@@ -311,6 +319,10 @@ export function PilotView() {
     // Project changes intentionally reload all server-bound workflow state.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth, projectId])
+
+  useEffect(() => {
+    if (notice?.tone === "error") noticeRef.current?.focus()
+  }, [notice])
 
   const login = async (username: string, password: string) => {
     await api.login(username, password)
@@ -360,6 +372,7 @@ export function PilotView() {
       setPendingActivation(null)
       setPhysicalPlacementConfirmed(false)
       setPendingSync(null)
+      setConfirmedRemoved([])
       setDeltaPage(0)
       setNotice({
         tone: "success",
@@ -374,6 +387,7 @@ export function PilotView() {
   }
 
   const updateScope = (key: string, changes: Partial<BoardScope>) => {
+    if (Object.keys(changes).some((field) => field !== "page")) setScopeTouched(true)
     setScopes((current) =>
       current.map((scope) => (scope.key === key ? { ...scope, ...changes } : scope)),
     )
@@ -383,6 +397,7 @@ export function PilotView() {
   }
 
   const removeScope = (key: string) => {
+    setScopeTouched(true)
     invalidateScopePreparation(key)
     setScopes((current) => current.filter((scope) => scope.key !== key))
   }
@@ -528,6 +543,7 @@ export function PilotView() {
       setPrintRequests({})
       setPendingActivation(null)
       setPhysicalPlacementConfirmed(false)
+      setScopeTouched(false)
       setNotice({
         tone: "success",
         message: `Revision ${revision.revision} ist nach bestaetigtem physischem Umstecken aktiv.`,
@@ -541,9 +557,38 @@ export function PilotView() {
     }
   }
 
+  const preparedCount = scopes.filter((scope) => preparations[scope.key]).length
+  const scopeLocked = busy === "sync" || busy === "activate" || busy.startsWith("prepare-")
+  const forecastTouched = Boolean(
+    revision &&
+    (forecastStart !== revision.source.forecastStart ||
+      forecastEnd !== revision.source.forecastEnd),
+  )
+  const workflowActive = Boolean(
+    busy ||
+    pendingSync ||
+    pendingActivation ||
+    physicalPlacementConfirmed ||
+    scopeTouched ||
+    forecastTouched ||
+    confirmedRemoved.length ||
+    preparedCount ||
+    scopes.some((scope) => scope.cardIds.length > 0),
+  )
+
+  useEffect(() => {
+    onWorkflowActiveChange?.(workflowActive)
+  }, [onWorkflowActiveChange, workflowActive])
+
+  useEffect(() => () => onWorkflowActiveChange?.(false), [onWorkflowActiveChange])
+
   if (auth === "checking") {
     return (
-      <div className="grid min-h-[55vh] place-items-center text-sm text-slate-600">
+      <div
+        className="grid min-h-[55vh] place-items-center text-sm text-slate-600"
+        role="status"
+        aria-live="polite"
+      >
         Sitzung wird geprueft...
       </div>
     )
@@ -564,11 +609,8 @@ export function PilotView() {
   const deltaPages = Math.max(1, Math.ceil((revision?.delta.length ?? 0) / PAGE_SIZE))
   const visibleDelta =
     revision?.delta.slice(deltaPage * PAGE_SIZE, (deltaPage + 1) * PAGE_SIZE) ?? []
-  const preparedCount = scopes.filter((scope) => preparations[scope.key]).length
-  const scopeLocked = busy === "sync" || busy === "activate" || busy.startsWith("prepare-")
-
   return (
-    <div className="space-y-5 pb-10 text-slate-900">
+    <div className="pilot-workflow space-y-5 pb-10 text-slate-900" aria-busy={Boolean(busy)}>
       <header className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 p-5 text-white shadow-xl sm:p-7">
         <div className="flex flex-wrap items-start justify-between gap-5">
           <div>
@@ -599,7 +641,7 @@ export function PilotView() {
               size="sm"
               className="mt-3 border-slate-600 bg-transparent text-white hover:bg-slate-800"
               onClick={() => void logout()}
-              disabled={busy === "logout"}
+              disabled={Boolean(busy)}
             >
               <LogOut /> Abmelden
             </Button>
@@ -609,8 +651,11 @@ export function PilotView() {
 
       {notice && (
         <div
+          ref={noticeRef}
           className={`flex items-start gap-2 rounded-xl border p-4 text-sm ${notice.tone === "error" ? "border-red-200 bg-red-50 text-red-900" : notice.tone === "success" ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-sky-200 bg-sky-50 text-sky-900"}`}
           role={notice.tone === "error" ? "alert" : "status"}
+          aria-live={notice.tone === "error" ? "assertive" : "polite"}
+          tabIndex={notice.tone === "error" ? -1 : undefined}
         >
           {notice.tone === "error" ? (
             <AlertTriangle className="mt-0.5 size-4 shrink-0" />
@@ -686,7 +731,7 @@ export function PilotView() {
             onClick={() => void runSync()}
             disabled={!project || scopeLocked || forecastEnd < forecastStart}
           >
-            <RefreshCw /> {busy === "sync" ? "Synchronisiert..." : "LCMD synchronisieren"}
+            <RefreshCw /> {busy === "sync" ? "Synchronisierung laeuft..." : "LCMD synchronisieren"}
           </Button>
           {pendingSync && (
             <Button
@@ -735,11 +780,21 @@ export function PilotView() {
             <table className="w-full min-w-[760px] text-left text-sm">
               <thead>
                 <tr className="border-b bg-slate-50 text-xs text-slate-600">
-                  <th className="p-3">Status</th>
-                  <th className="p-3">Karte</th>
-                  <th className="p-3">Termin</th>
-                  <th className="p-3">Druckfolge</th>
-                  <th className="p-3">Klaerung</th>
+                  <th scope="col" className="p-3">
+                    Status
+                  </th>
+                  <th scope="col" className="p-3">
+                    Karte
+                  </th>
+                  <th scope="col" className="p-3">
+                    Termin
+                  </th>
+                  <th scope="col" className="p-3">
+                    Druckfolge
+                  </th>
+                  <th scope="col" className="p-3">
+                    Klaerung
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -805,13 +860,13 @@ export function PilotView() {
                             <input
                               type="checkbox"
                               checked={confirmedRemoved.includes(delta.sourcePlanCardId)}
-                              onChange={() =>
+                              onChange={() => {
                                 setConfirmedRemoved((current) =>
                                   current.includes(delta.sourcePlanCardId)
                                     ? current.filter((id) => id !== delta.sourcePlanCardId)
                                     : [...current, delta.sourcePlanCardId],
                                 )
-                              }
+                              }}
                             />
                             <span>Fehlen manuell bestaetigen</span>
                           </label>
@@ -869,12 +924,13 @@ export function PilotView() {
           </div>
           <Button
             variant="outline"
-            onClick={() =>
+            onClick={() => {
+              setScopeTouched(true)
               setScopes((current) => [
                 ...current,
                 boardScope(current.length + 1, revision ?? undefined),
               ])
-            }
+            }}
             disabled={!revision || scopeLocked}
           >
             <Plus /> Tafel hinzufuegen
@@ -882,6 +938,7 @@ export function PilotView() {
         </div>
         <div className="mt-5 grid gap-5">
           {scopes.map((scope, scopeIndex) => {
+            const fieldPrefix = `pilot-board-${scopeIndex}`
             const scoped = revision
               ? pilotCardsInScope(revision.source.cards, scope.start, scope.end).filter((card) => {
                   const delta = deltaById.get(card.sourcePlanCardId)
@@ -925,8 +982,9 @@ export function PilotView() {
                 </div>
                 <div className="mt-4 grid gap-3 lg:grid-cols-4">
                   <div className="grid gap-2">
-                    <Label>Tafelkennung</Label>
+                    <Label htmlFor={`${fieldPrefix}-id`}>Tafelkennung</Label>
                     <Input
+                      id={`${fieldPrefix}-id`}
                       value={scope.boardId}
                       maxLength={128}
                       disabled={scopeLocked}
@@ -936,16 +994,18 @@ export function PilotView() {
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label>Anzeigename</Label>
+                    <Label htmlFor={`${fieldPrefix}-label`}>Anzeigename</Label>
                     <Input
+                      id={`${fieldPrefix}-label`}
                       value={scope.label}
                       disabled={scopeLocked}
                       onChange={(event) => updateScope(scope.key, { label: event.target.value })}
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label>Scope von</Label>
+                    <Label htmlFor={`${fieldPrefix}-start`}>Scope von</Label>
                     <Input
+                      id={`${fieldPrefix}-start`}
                       type="date"
                       value={scope.start}
                       disabled={scopeLocked}
@@ -955,8 +1015,9 @@ export function PilotView() {
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label>Scope bis</Label>
+                    <Label htmlFor={`${fieldPrefix}-end`}>Scope bis</Label>
                     <Input
+                      id={`${fieldPrefix}-end`}
                       type="date"
                       value={scope.end}
                       disabled={scopeLocked}
@@ -1092,7 +1153,11 @@ export function PilotView() {
                   )}
                 </div>
                 {preparation && (
-                  <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+                  <div
+                    className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4"
+                    role="status"
+                    aria-live="polite"
+                  >
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
                         <strong className="text-emerald-900">Backendbindung steht</strong>

@@ -1,4 +1,5 @@
 import { writeFile } from "node:fs/promises"
+import assert from "node:assert/strict"
 
 import { chromium } from "playwright"
 
@@ -44,11 +45,41 @@ await page.getByLabel("Benutzername").fill("member-a")
 await page.getByLabel("Passwort").fill("test-only-password")
 await page.getByRole("button", { name: "Anmelden" }).click()
 await page.getByRole("heading", { name: "Delta verstehen" }).waitFor()
+await page.setViewportSize({ width: 390, height: 844 })
+const mobileOverflow = await page.evaluate(
+  () => document.documentElement.scrollWidth - window.innerWidth,
+)
+assert.ok(mobileOverflow <= 1, `mobile page overflows by ${mobileOverflow}px`)
+await page.screenshot({ path: "/proof/studio-mobile.png", fullPage: true })
 await page.getByRole("button", { name: /LCMD synchronisieren/ }).click()
 await page.getByText("LCMD-Stand als Revision 1 synchronisiert.").waitFor()
 await page.getByRole("button", { name: /Alle 6 verfuegbaren/ }).click()
+const beforeUnloadPrevented = await page.evaluate(() => {
+  const event = new Event("beforeunload", { cancelable: true })
+  return !window.dispatchEvent(event)
+})
+assert.equal(beforeUnloadPrevented, true)
+let navigationGuarded = false
+page.once("dialog", async (dialog) => {
+  navigationGuarded = dialog.message().includes("noch nicht abgeschlossen")
+  await dialog.dismiss()
+})
+await page.getByRole("tab", { name: "Zielbild" }).click()
+assert.equal(navigationGuarded, true)
+await page.getByRole("heading", { name: "Delta verstehen" }).waitFor()
 await page.getByRole("button", { name: "Druck vorbereiten", exact: true }).click()
 await page.getByText("Backendbindung steht").waitFor()
+const preparedMobileOverflow = await page.evaluate(
+  () => document.documentElement.scrollWidth - window.innerWidth,
+)
+assert.ok(
+  preparedMobileOverflow <= 1,
+  `prepared mobile page overflows by ${preparedMobileOverflow}px`,
+)
+await page.getByRole("button", { name: "Karten-PDF" }).scrollIntoViewIfNeeded()
+assert.equal(await page.getByRole("button", { name: "Karten-PDF" }).isVisible(), true)
+await page.setViewportSize({ width: 1366, height: 900 })
+await page.screenshot({ path: "/proof/studio-wide.png", fullPage: true })
 await page.getByRole("button", { name: /Identisch erneut anfordern/ }).click()
 await page.getByText("backendgebunden vorbereitet").waitFor()
 
@@ -74,6 +105,7 @@ await page
   .getByRole("alert")
   .getByText(/Projektstand hat sich geaendert/)
   .waitFor()
+assert.equal(await page.evaluate(() => document.activeElement?.getAttribute("role")), "alert")
 if ((await page.getByText("Backendbindung steht").count()) !== 0) {
   throw new Error("conflict_kept_stale_preparation")
 }
@@ -155,6 +187,9 @@ await writeFile(
         "sync",
         "delta",
         "prepare",
+        "mobile-layout",
+        "navigation-guard",
+        "error-focus",
         "repeat",
         "cards-pdf",
         "marker-pdf",
