@@ -5,9 +5,9 @@ export const PILOT_CARD_LONG_MM = 120
 export const PILOT_CARD_INNER_SHORT_MM = 62.5
 export const PILOT_CARD_INNER_LONG_MM = 117
 
-const TITLE_SIZE_MM = 2.5
+const DEFAULT_TITLE_SIZE_MM = 2.5
 const DETAIL_SIZE_MM = 1.35
-const TRADE_COLOR = rgb(0.04, 0.38, 0.42)
+const DEFAULT_TRADE_COLOR = rgb(0.04, 0.38, 0.42)
 const COMPLETED_BACKGROUND = rgb(0.86, 0.96, 0.9)
 const COMPLETED_INK = rgb(0.05, 0.32, 0.18)
 
@@ -60,9 +60,10 @@ function visibleTextLayout(
   bold: PDFFont,
   card: PilotCardLayoutData,
   withCodes: boolean,
+  titleSizeMm: number,
 ) {
   const maxWidth = mm(withCodes ? 35 : 54)
-  const title = completeWrappedLines(bold, card.activity, mm(TITLE_SIZE_MM), maxWidth)
+  const title = completeWrappedLines(bold, card.activity, mm(titleSizeMm), maxWidth)
   const trade = completeWrappedLines(
     font,
     card.trade || "Gewerk nicht angegeben",
@@ -73,7 +74,7 @@ function visibleTextLayout(
     `Bereich: ${card.area || "nicht angegeben"}`,
     ...(card.task ? [`Aufgabe: ${card.task}`] : []),
   ]
-  const titleLineMm = TITLE_SIZE_MM * 1.2
+  const titleLineMm = titleSizeMm * 1.2
   const detailLineMm = DETAIL_SIZE_MM * 1.25
   const context = completeWrappedLines(font, details.join(" | "), mm(DETAIL_SIZE_MM), maxWidth)
   const heightMm = title.length * titleLineMm + 3 + (trade.length + context.length) * detailLineMm
@@ -90,9 +91,11 @@ function drawVisibleText(
   card: PilotCardLayoutData,
   completed: boolean,
   withCodes: boolean,
+  completedColor: ReturnType<typeof rgb>,
+  titleSizeMm: number,
 ) {
-  const layout = visibleTextLayout(font, bold, card, withCodes)
-  const color = completed ? COMPLETED_INK : rgb(0.05, 0.07, 0.12)
+  const layout = visibleTextLayout(font, bold, card, withCodes, titleSizeMm)
+  const color = completed ? completedColor : rgb(0.05, 0.07, 0.12)
   const xMm = completed ? 62 : 4
   const rotation = completed ? degrees(180) : undefined
   const direction = completed ? 1 : -1
@@ -110,7 +113,7 @@ function drawVisibleText(
       yMm += direction * lineMm
     }
   }
-  drawLines(layout.title, TITLE_SIZE_MM, layout.titleLineMm, bold)
+  drawLines(layout.title, titleSizeMm, layout.titleLineMm, bold)
   yMm += direction * 3
   drawLines(layout.trade, DETAIL_SIZE_MM, layout.detailLineMm, font)
   drawLines(layout.context, DETAIL_SIZE_MM, layout.detailLineMm, font)
@@ -136,7 +139,10 @@ export function drawPilotCardFace(
   bold: PDFFont,
   card: PilotCardLayoutData,
   codeMarkers?: { drawActive: () => void; drawDone: () => void },
+  tradeColor = DEFAULT_TRADE_COLOR,
+  titleSizeMm = DEFAULT_TITLE_SIZE_MM,
 ) {
+  const completedColor = COMPLETED_INK
   page.drawRectangle({
     x: 0,
     y: 0,
@@ -149,7 +155,7 @@ export function drawPilotCardFace(
     y: mm(88),
     width: mm(PILOT_CARD_SHORT_MM),
     height: mm(32),
-    color: TRADE_COLOR,
+    color: tradeColor,
     opacity: 0.1,
   })
   page.drawRectangle({
@@ -164,28 +170,46 @@ export function drawPilotCardFace(
     y: mm(114),
     width: mm(PILOT_CARD_SHORT_MM),
     height: mm(6),
-    color: TRADE_COLOR,
+    color: tradeColor,
   })
   page.drawRectangle({
     x: 0,
     y: 0,
     width: mm(PILOT_CARD_SHORT_MM),
     height: mm(6),
-    color: TRADE_COLOR,
+    color: tradeColor,
   })
   codeMarkers?.drawActive()
   codeMarkers?.drawDone()
-  page.drawText("AKTIV", { x: mm(4), y: mm(111), size: mm(2.1), font: bold, color: TRADE_COLOR })
+  page.drawText("AKTIV", { x: mm(4), y: mm(111), size: mm(2.1), font: bold, color: tradeColor })
   page.drawText("ERLEDIGT", {
     x: mm(62),
     y: mm(9),
     size: mm(2.1),
     font: bold,
     rotate: degrees(180),
-    color: COMPLETED_INK,
+    color: completedColor,
   })
-  const activeLayout = drawVisibleText(page, font, bold, card, false, Boolean(codeMarkers))
-  const doneLayout = drawVisibleText(page, font, bold, card, true, Boolean(codeMarkers))
+  const activeLayout = drawVisibleText(
+    page,
+    font,
+    bold,
+    card,
+    false,
+    Boolean(codeMarkers),
+    completedColor,
+    titleSizeMm,
+  )
+  const doneLayout = drawVisibleText(
+    page,
+    font,
+    bold,
+    card,
+    true,
+    Boolean(codeMarkers),
+    completedColor,
+    titleSizeMm,
+  )
   if (JSON.stringify(activeLayout) !== JSON.stringify(doneLayout)) {
     throw new Error("Die beiden sichtbaren Kartenenden verwenden nicht dasselbe Textlayout.")
   }

@@ -8,6 +8,8 @@ import {
   EMPTY_TAGLESS_FILTERS,
   filterTaglessTickets,
   isoWeek,
+  normalizeTaglessFilters,
+  taglessFacetOptions,
   validateTaglessProcessPlan,
 } from "@/lib/tagless-workflow"
 
@@ -123,19 +125,67 @@ describe("tagless process-plan workflow", () => {
     expect(
       filterTaglessTickets(tickets, {
         ...EMPTY_TAGLESS_FILTERS,
-        area: "Nord / Ebene 1",
-        trade: "Trockenbau",
-        date: "2026-09-16",
+        area: ["Nord / Ebene 1"],
+        trade: ["Trockenbau"],
+        date: ["2026-09-16"],
         query: "material",
       }),
     ).toHaveLength(1)
     expect(
       filterTaglessTickets(tickets, {
         ...EMPTY_TAGLESS_FILTERS,
-        week: "2026-KW38",
+        week: ["2026-KW38"],
         query: "trasse",
       }),
     ).toHaveLength(2)
+  })
+
+  it("combines multi-value filters and limits every facet by the other filters", () => {
+    const base = createTaglessTickets(processPlanTable(), "all-days")
+    const tickets = [
+      ...base,
+      {
+        ...base[0]!,
+        ticketId: "303:2026-10-01",
+        taskId: "303",
+        taskName: "Decke streichen",
+        date: "2026-10-01",
+        trade: "Maler",
+        area: { level1: "West" },
+      },
+    ]
+    const weeks = { ...EMPTY_TAGLESS_FILTERS, week: ["2026-KW38", "2026-KW40"] }
+    expect(filterTaglessTickets(tickets, weeks)).toHaveLength(10)
+    expect(
+      filterTaglessTickets(tickets, {
+        ...weeks,
+        trade: ["Elektro", "Maler"],
+      }),
+    ).toHaveLength(3)
+
+    const north = { ...EMPTY_TAGLESS_FILTERS, area: ["Nord / Ebene 1"] }
+    expect(taglessFacetOptions(tickets, north, "trade")).toEqual(["Trockenbau"])
+    expect(taglessFacetOptions(tickets, north, "week")).toEqual(["2026-KW38"])
+    expect(taglessFacetOptions(tickets, north, "date")).toHaveLength(7)
+
+    const normalized = normalizeTaglessFilters(
+      tickets,
+      {
+        ...north,
+        trade: ["Trockenbau"],
+        date: ["2026-09-16"],
+        week: ["2026-KW40"],
+      },
+      "week",
+    )
+    expect(normalized).toMatchObject({
+      area: [],
+      trade: [],
+      date: [],
+      week: ["2026-KW40"],
+    })
+    expect(taglessFacetOptions(tickets, normalized, "trade")).toEqual(["Maler"])
+    expect(taglessFacetOptions(tickets, normalized, "area")).toEqual(["West"])
   })
 
   it("exports only the chosen cards at pilot dimensions without code or tag identity", async () => {
@@ -163,5 +213,26 @@ describe("tagless process-plan workflow", () => {
     expect(firstText.join(" ")).not.toMatch(/Tag|Code| ID /i)
     expect(secondText.join(" ")).not.toContain("Leitungen montieren")
     expect(Buffer.from(bytes).toString("latin1")).not.toMatch(/Pilot(?:Active|Done)TagId/)
+  })
+
+  it("uses each trade's exact XLSX RGB color in the exported card", async () => {
+    const tickets = createTaglessTickets(processPlanTable(), "all-days")
+    const dryConstruction = tickets.find((ticket) => ticket.trade === "Trockenbau")!
+    const electrical = tickets.find((ticket) => ticket.trade === "Elektro")!
+    const bytes = await createTaglessCardsPdf([dryConstruction, electrical])
+    const document = await PDFDocument.load(bytes)
+    const dryConstructionContent = embeddedCardContent(document, 0)
+    const electricalContent = embeddedCardContent(document, 1)
+
+    expect(dryConstruction.tradeColor).toBe("#0f766e")
+    expect(electrical.tradeColor).toBe("#0369a1")
+    expect(dryConstructionContent).toMatch(/0\.0588\d* 0\.4627\d* 0\.4313\d* rg/)
+    expect(electricalContent).toMatch(/0\.0117\d* 0\.4117\d* 0\.6313\d* rg/)
+    expect(dryConstructionContent).toMatch(/0\.86 0\.96 0\.9 rg/)
+    expect(electricalContent).toMatch(/0\.86 0\.96 0\.9 rg/)
+    expect(dryConstructionContent).toMatch(/9\.0708\d* Tf/)
+    expect(electricalContent).toMatch(/9\.0708\d* Tf/)
+    expect(dryConstructionContent).not.toMatch(/0\.0117\d* 0\.4117\d* 0\.6313\d* rg/)
+    expect(electricalContent).not.toMatch(/0\.0588\d* 0\.4627\d* 0\.4313\d* rg/)
   })
 })

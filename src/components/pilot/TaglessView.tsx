@@ -1,6 +1,7 @@
 import {
   CalendarCheck,
   Check,
+  ChevronDown,
   Download,
   FileSpreadsheet,
   Loader2,
@@ -9,9 +10,17 @@ import {
   Upload,
 } from "lucide-react"
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react"
+import { useDropzone } from "react-dropzone"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { readXlsxToTable } from "@/lib/import-xlsx"
@@ -21,9 +30,12 @@ import {
   EMPTY_TAGLESS_FILTERS,
   filterTaglessTickets,
   isoWeek,
+  normalizeTaglessFilters,
+  taglessFacetOptions,
   ticketArea,
   validateTaglessProcessPlan,
   type TaglessDayMode,
+  type TaglessFacet,
   type TaglessFilters,
 } from "@/lib/tagless-workflow"
 import type { ImportTable, TicketData } from "@/lib/ticket-types"
@@ -41,24 +53,37 @@ function safeFilename(value: string) {
 function TaglessCardPreview({ ticket, done }: { ticket: TicketData; done: boolean }) {
   const color = ticket.tradeColor || "#0f766e"
   const area = ticketArea(ticket) || "Bereich nicht angegeben"
-  const end = (status: "Aktiv" | "Erledigt", rotate: boolean) => (
-    <div
-      className="grid min-h-0 border-t-8 px-4 py-3"
-      style={{
-        borderColor: color,
-        background: `color-mix(in srgb, ${color} 10%, white)`,
-        transform: rotate ? "rotate(180deg)" : undefined,
-      }}
-    >
-      <div className="text-[10px] font-bold tracking-[0.14em] uppercase" style={{ color }}>
-        {status}
+  const end = (status: "Aktiv" | "Erledigt", rotate: boolean) => {
+    const completed = status === "Erledigt"
+    return (
+      <div
+        className="grid min-h-0 border-t-8 px-4 py-3"
+        data-card-status={completed ? "done" : "active"}
+        style={{
+          borderColor: color,
+          background: completed ? "rgb(219 245 230)" : `color-mix(in srgb, ${color} 10%, white)`,
+          transform: rotate ? "rotate(180deg)" : undefined,
+        }}
+      >
+        <div
+          className="text-[10px] font-bold tracking-[0.14em] uppercase"
+          style={{ color: completed ? "rgb(13 82 46)" : color }}
+        >
+          {status}
+        </div>
+        <strong
+          className={`mt-2 text-lg leading-tight ${completed ? "text-green-950" : "text-slate-950"}`}
+        >
+          {ticket.taskName}
+        </strong>
+        <span
+          className={`mt-2 text-[10px] leading-relaxed ${completed ? "text-green-900" : "text-slate-600"}`}
+        >
+          {ticket.trade || "Gewerk nicht angegeben"} / {area}
+        </span>
       </div>
-      <strong className="mt-2 text-base leading-tight text-slate-950">{ticket.taskName}</strong>
-      <span className="mt-2 text-[10px] leading-relaxed text-slate-600">
-        {ticket.trade || "Gewerk nicht angegeben"} / {area}
-      </span>
-    </div>
-  )
+    )
+  }
   return (
     <div className="mx-auto w-full max-w-[390px]">
       <div className="mb-2 flex justify-between text-xs text-slate-500">
@@ -87,36 +112,86 @@ function TaglessCardPreview({ ticket, done }: { ticket: TicketData; done: boolea
   )
 }
 
-function SelectFilter({
+function formatWeek(value: string) {
+  const match = value.match(/^(\d{4})-KW(\d{2})$/)
+  return match ? `KW ${match[2]} / ${match[1]}` : value
+}
+
+function MultiSelectFilter({
   id,
   label,
   value,
   options,
   onChange,
+  formatValue = (entry) => entry,
+  disabled = false,
 }: {
   id: string
   label: string
-  value: string
+  value: string[]
   options: string[]
-  onChange: (value: string) => void
+  onChange: (value: string[]) => void
+  formatValue?: (value: string) => string
+  disabled?: boolean
 }) {
+  const summary =
+    value.length === 0
+      ? "Alle verfuegbaren"
+      : value.length === 1
+        ? formatValue(value[0]!)
+        : `${value.length} ausgewaehlt`
   return (
-    <label className="grid gap-1.5 text-xs font-medium text-slate-600" htmlFor={id}>
-      {label}
-      <select
-        id={id}
-        className="h-11 min-w-0 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900"
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-      >
-        <option value="">Alle</option>
-        {options.map((option) => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
-      </select>
-    </label>
+    <div className="grid min-w-0 gap-1.5 text-xs font-medium text-slate-600">
+      <Label htmlFor={id} className="text-xs">
+        {label}
+      </Label>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            id={id}
+            type="button"
+            disabled={disabled}
+            className="flex h-11 min-w-0 items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white px-3 text-left text-sm font-normal text-slate-900 disabled:opacity-50"
+            aria-label={`${label}: ${summary}`}
+          >
+            <span className="truncate">{summary}</span>
+            <ChevronDown className="size-4 shrink-0 text-slate-400" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="start"
+          className="max-h-80 w-[var(--radix-dropdown-menu-trigger-width)] min-w-56 overflow-y-auto"
+        >
+          <DropdownMenuCheckboxItem
+            checked={value.length === 0}
+            onCheckedChange={() => onChange([])}
+            onSelect={(event) => event.preventDefault()}
+          >
+            Alle verfuegbaren
+          </DropdownMenuCheckboxItem>
+          <DropdownMenuSeparator />
+          {options.map((option) => (
+            <DropdownMenuCheckboxItem
+              key={option}
+              checked={value.includes(option)}
+              onCheckedChange={() =>
+                onChange(
+                  value.includes(option)
+                    ? value.filter((entry) => entry !== option)
+                    : [...value, option],
+                )
+              }
+              onSelect={(event) => event.preventDefault()}
+            >
+              {formatValue(option)}
+            </DropdownMenuCheckboxItem>
+          ))}
+          {options.length === 0 && (
+            <div className="px-2 py-3 text-xs text-slate-500">Keine passenden Werte</div>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   )
 }
 
@@ -127,7 +202,6 @@ export function TaglessView({
   onWorkflowActiveChange?: (active: boolean) => void
   onRequestActiveChange?: (active: boolean) => void
 }) {
-  const inputRef = useRef<HTMLInputElement>(null)
   const operationVersion = useRef(0)
   const mounted = useRef(true)
   const [table, setTable] = useState<ImportTable | null>(null)
@@ -142,15 +216,15 @@ export function TaglessView({
   const [exporting, setExporting] = useState(false)
   const [error, setError] = useState("")
 
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    mounted.current = true
+    return () => {
       mounted.current = false
       operationVersion.current += 1
       onWorkflowActiveChange?.(false)
       onRequestActiveChange?.(false)
-    },
-    [onRequestActiveChange, onWorkflowActiveChange],
-  )
+    }
+  }, [onRequestActiveChange, onWorkflowActiveChange])
 
   const workflowActive = Boolean(table || importing || exporting)
   const requestActive = importing || exporting
@@ -165,14 +239,14 @@ export function TaglessView({
   const preview = byId.get(previewId) ?? null
   const selectedVisible = filtered.filter((ticket) => selected.has(ticket.ticketId)).length
   const selectedHidden = selected.size - selectedVisible
-  const areas = [...new Set(tickets.map(ticketArea).filter(Boolean))].sort()
-  const trades = [...new Set(tickets.map((ticket) => ticket.trade || "Ohne Gewerk"))].sort()
-  const dates = [
-    ...new Set(
-      tickets.map((ticket) => ticket.date).filter((date): date is string => Boolean(date)),
-    ),
-  ].sort()
-  const weeks = [...new Set(dates.map(isoWeek).filter(Boolean))].sort()
+  const areas = taglessFacetOptions(tickets, filters, "area")
+  const trades = taglessFacetOptions(tickets, filters, "trade")
+  const dates = taglessFacetOptions(tickets, filters, "date")
+  const weeks = taglessFacetOptions(tickets, filters, "week")
+
+  const updateFacet = (facet: TaglessFacet, value: string[]) => {
+    setFilters((current) => normalizeTaglessFilters(tickets, { ...current, [facet]: value }, facet))
+  }
 
   const resetImportedData = () => {
     setTable(null)
@@ -210,6 +284,22 @@ export function TaglessView({
       if (version === operationVersion.current && mounted.current) setImporting(false)
     }
   }
+
+  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
+    accept: {
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"],
+    },
+    multiple: false,
+    noClick: true,
+    disabled: requestActive,
+    onDropAccepted: (accepted) => {
+      const file = accepted[0]
+      if (file) void importFile(file)
+    },
+    onDropRejected: () => {
+      setError("Nur Dateien mit der Endung .xlsx werden akzeptiert.")
+    },
+  })
 
   const chooseDayMode = (mode: TaglessDayMode) => {
     setDayMode(mode)
@@ -301,7 +391,16 @@ export function TaglessView({
             Import ersetzt Karten, Filter und Auswahl des vorherigen Imports atomar.
           </p>
         </div>
-        <div className="flex flex-col justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        <div
+          {...getRootProps({
+            className: `flex flex-col justify-center rounded-xl border border-dashed p-4 transition-colors sm:flex-row sm:items-center sm:justify-between sm:gap-4 ${
+              isDragActive
+                ? "border-sky-500 bg-sky-50 ring-2 ring-sky-100"
+                : "border-slate-300 bg-slate-50"
+            }`,
+            "aria-label": "Prozessplan-XLSX hier ablegen oder auswaehlen",
+          })}
+        >
           <div className="flex min-w-0 items-center gap-3">
             <FileSpreadsheet className="size-8 shrink-0 text-sky-700" />
             <div className="min-w-0">
@@ -309,26 +408,20 @@ export function TaglessView({
                 {table?.fileName || "Noch keine Datei"}
               </strong>
               <span className="text-xs text-slate-500">
-                {table ? `${table.rows.length} Prozesszeilen erkannt` : "Ausschliesslich .xlsx"}
+                {isDragActive
+                  ? "XLSX jetzt ablegen"
+                  : table
+                    ? `${table.rows.length} Prozesszeilen erkannt / neue XLSX hier ablegen`
+                    : "XLSX hier ablegen oder ueber den Button auswaehlen"}
               </span>
             </div>
           </div>
-          <input
-            ref={inputRef}
-            className="hidden"
-            type="file"
-            accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            onChange={(event) => {
-              const file = event.target.files?.[0]
-              event.currentTarget.value = ""
-              if (file) void importFile(file)
-            }}
-          />
+          <input {...getInputProps()} />
           <Button
             type="button"
             className="mt-3 bg-sky-700 hover:bg-sky-800 sm:mt-0"
             disabled={importing || exporting}
-            onClick={() => inputRef.current?.click()}
+            onClick={open}
           >
             {importing ? <Loader2 className="animate-spin" /> : <Upload />}
             {table ? "Neu importieren" : "XLSX waehlen"}
@@ -429,37 +522,38 @@ export function TaglessView({
             </div>
 
             <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-              <SelectFilter
+              <MultiSelectFilter
                 id="tagless-area"
                 label="Bereich"
                 value={filters.area}
                 options={areas}
-                onChange={(area) => setFilters((current) => ({ ...current, area }))}
+                disabled={requestActive}
+                onChange={(area) => updateFacet("area", area)}
               />
-              <SelectFilter
+              <MultiSelectFilter
                 id="tagless-trade"
                 label="Gewerk"
                 value={filters.trade}
                 options={trades}
-                onChange={(trade) => setFilters((current) => ({ ...current, trade }))}
+                disabled={requestActive}
+                onChange={(trade) => updateFacet("trade", trade)}
               />
-              <SelectFilter
+              <MultiSelectFilter
                 id="tagless-date"
                 label="Datum"
                 value={filters.date}
                 options={dates}
-                onChange={(date) =>
-                  setFilters((current) => ({ ...current, date, week: date ? "" : current.week }))
-                }
+                disabled={requestActive}
+                onChange={(date) => updateFacet("date", date)}
               />
-              <SelectFilter
+              <MultiSelectFilter
                 id="tagless-week"
                 label="ISO-Woche"
                 value={filters.week}
                 options={weeks}
-                onChange={(week) =>
-                  setFilters((current) => ({ ...current, week, date: week ? "" : current.date }))
-                }
+                formatValue={formatWeek}
+                disabled={requestActive}
+                onChange={(week) => updateFacet("week", week)}
               />
             </div>
             <Label htmlFor="tagless-search" className="mt-3 block text-xs text-slate-600">
@@ -474,7 +568,12 @@ export function TaglessView({
                 value={filters.query}
                 placeholder="Vorgang, Gewerk, Bereich oder Datum"
                 onChange={(event) =>
-                  setFilters((current) => ({ ...current, query: event.target.value }))
+                  setFilters((current) =>
+                    normalizeTaglessFilters(tickets, {
+                      ...current,
+                      query: event.target.value,
+                    }),
+                  )
                 }
               />
             </div>

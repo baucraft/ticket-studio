@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import { readFile, writeFile } from "node:fs/promises"
 
-import { PDFDocument, PDFName } from "pdf-lib"
+import { decodePDFRawStream, PDFDict, PDFDocument, PDFName, PDFRawStream } from "pdf-lib"
 import { chromium } from "playwright"
 import * as XLSX from "../../../public/vendor/xlsx-0.20.3.mjs"
 
@@ -45,8 +45,8 @@ const firstImport = workbook([
   [
     202,
     "Leitungen montieren",
-    excelSerial("2026-09-14"),
-    excelSerial("2026-09-18"),
+    excelSerial("2026-09-28"),
+    excelSerial("2026-10-02"),
     1,
     "Elektro",
     "RGB(3,105,161)",
@@ -89,6 +89,29 @@ await page.route("**/api/pilot/v1/**", (route) =>
   }),
 )
 
+async function toggleFacet(label, option) {
+  await page.getByRole("button", { name: new RegExp(`^${label}:`) }).click()
+  await page.getByRole("menuitemcheckbox", { name: option, exact: true }).click()
+  await page.keyboard.press("Escape")
+}
+
+async function clearFacet(label) {
+  await toggleFacet(label, "Alle verfuegbaren")
+}
+
+function embeddedCardContent(document, pageIndex) {
+  const resources = document.getPage(pageIndex).node.Resources()
+  assert.ok(resources)
+  const objects = resources.lookup(PDFName.of("XObject"), PDFDict)
+  return objects
+    .entries()
+    .map(([, object]) => {
+      const stream = document.context.lookup(object, PDFRawStream)
+      return Buffer.from(decodePDFRawStream(stream).decode()).toString("ascii")
+    })
+    .join("\n")
+}
+
 try {
   await page.goto(base, { waitUntil: "networkidle" })
   if ((await page.getByRole("tab", { name: "Pilot" }).count()) === 0) {
@@ -111,15 +134,46 @@ try {
   await page.getByRole("button", { name: "Arbeitswoche bestaetigen" }).click()
   await page.getByText("Bestaetigt: Mo-Sa / 11 Karten").waitFor()
 
-  await page.getByLabel("Bereich").selectOption("Nord")
+  await toggleFacet("ISO-Woche", "KW 38 / 2026")
+  await toggleFacet("ISO-Woche", "KW 40 / 2026")
+  await page.getByRole("button", { name: "ISO-Woche: 2 ausgewaehlt" }).waitFor()
+  await toggleFacet("Bereich", "Nord")
+  await page.getByRole("button", { name: /^Gewerk:/ }).click()
+  assert.equal(await page.getByRole("menuitemcheckbox", { name: "Trockenbau" }).count(), 1)
+  assert.equal(await page.getByRole("menuitemcheckbox", { name: "Elektro" }).count(), 0)
+  await page.keyboard.press("Escape")
+  await page.getByRole("button", { name: "ISO-Woche: KW 38 / 2026" }).waitFor()
   await page.getByRole("button", { name: "Alle 6 gefilterten auswaehlen" }).click()
-  await page.getByLabel("Bereich").selectOption("Sued")
+  await clearFacet("Bereich")
+  await clearFacet("ISO-Woche")
+  await toggleFacet("ISO-Woche", "KW 40 / 2026")
+  await page.getByRole("button", { name: /^Bereich:/ }).click()
+  assert.equal(await page.getByRole("menuitemcheckbox", { name: "Sued" }).count(), 1)
+  assert.equal(await page.getByRole("menuitemcheckbox", { name: "Nord" }).count(), 0)
+  await page.keyboard.press("Escape")
+  await toggleFacet("Bereich", "Sued")
   await page.getByText(/6 ausgewaehlt.*6 durch Filter ausgeblendet/).waitFor()
   await page
     .getByRole("button", { name: /Leitungen montieren fuer Druck auswaehlen/ })
     .first()
     .click()
   await page.getByText("Leitungen montieren", { exact: true }).first().click()
+  const previewCard = page.getByLabel("Taglose Karte in Aktiv-Orientierung")
+  const completedEnd = previewCard.locator('[data-card-status="done"]')
+  assert.equal(
+    await completedEnd.evaluate((element) => getComputedStyle(element).backgroundColor),
+    "rgb(219, 245, 230)",
+  )
+  assert.equal(
+    await completedEnd.evaluate((element) => getComputedStyle(element).borderTopColor),
+    "rgb(3, 105, 161)",
+  )
+  assert.equal(
+    await completedEnd
+      .getByText("Leitungen montieren", { exact: true })
+      .evaluate((element) => getComputedStyle(element).fontSize),
+    "18px",
+  )
   await page.getByText(/7 ausgewaehlte Karten als PDF/).waitFor()
   assert.equal(await page.getByText("Vorschau ist keine Druckauswahl.").count(), 1)
   const beforeUnloadPrevented = await page.evaluate(() => {
@@ -140,6 +194,10 @@ try {
   assert.ok(Math.abs(size.height - (120 * 72) / 25.4) < 0.001)
   assert.equal(pdf.getPage(0).node.get(PDFName.of("PilotActiveTagId")), undefined)
   assert.equal(pdf.getPage(0).node.get(PDFName.of("PilotDoneTagId")), undefined)
+  assert.match(embeddedCardContent(pdf, 0), /0\.0588\d* 0\.4627\d* 0\.4313\d* rg/)
+  assert.match(embeddedCardContent(pdf, 6), /0\.0117\d* 0\.4117\d* 0\.6313\d* rg/)
+  assert.match(embeddedCardContent(pdf, 6), /0\.86 0\.96 0\.9 rg/)
+  assert.match(embeddedCardContent(pdf, 6), /9\.0708\d* Tf/)
 
   await page.screenshot({ path: `${proof}/tagless-desktop.png`, fullPage: true })
   await page.setViewportSize({ width: 390, height: 844 })

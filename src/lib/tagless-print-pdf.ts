@@ -12,6 +12,18 @@ import { ticketArea } from "@/lib/tagless-workflow"
 import type { TicketData } from "@/lib/ticket-types"
 
 const FIXED_DATE = new Date("2026-09-18T00:00:00.000Z")
+const DEFAULT_TRADE_COLOR = "#0f766e"
+const TAGLESS_TITLE_SIZE_MM = 3.2
+
+export function taglessPdfTradeColor(value?: string) {
+  const match = (value || DEFAULT_TRADE_COLOR).match(/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i)
+  if (!match) return taglessPdfTradeColor(DEFAULT_TRADE_COLOR)
+  return rgb(
+    Number.parseInt(match[1]!, 16) / 255,
+    Number.parseInt(match[2]!, 16) / 255,
+    Number.parseInt(match[3]!, 16) / 255,
+  )
+}
 
 export async function createTaglessCardsPdf(tickets: readonly TicketData[]) {
   if (
@@ -28,13 +40,21 @@ export async function createTaglessCardsPdf(tickets: readonly TicketData[]) {
     if (!ticket.date) throw new Error(`Karte ${index + 1} hat kein Datum.`)
     const page = rawDocument.addPage([mm(PILOT_CARD_SHORT_MM), mm(PILOT_CARD_LONG_MM)])
     try {
-      drawPilotCardFace(page, font, bold, {
-        activity: ticket.taskName,
-        task: ticket.description,
-        trade: ticket.trade,
-        area: ticketArea(ticket),
-        date: ticket.date,
-      })
+      drawPilotCardFace(
+        page,
+        font,
+        bold,
+        {
+          activity: ticket.taskName,
+          task: ticket.description,
+          trade: ticket.trade,
+          area: ticketArea(ticket),
+          date: ticket.date,
+        },
+        undefined,
+        taglessPdfTradeColor(ticket.tradeColor),
+        TAGLESS_TITLE_SIZE_MM,
+      )
     } catch (error) {
       const message = error instanceof Error ? error.message : "unbekannter Renderfehler"
       throw new Error(`Karte ${index + 1}: ${message}`)

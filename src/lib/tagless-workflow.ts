@@ -4,18 +4,20 @@ import type { ImportTable, TicketData } from "@/lib/ticket-types"
 export type TaglessDayMode = Exclude<GenerateMode, "auto">
 
 export type TaglessFilters = {
-  area: string
-  trade: string
-  date: string
-  week: string
+  area: string[]
+  trade: string[]
+  date: string[]
+  week: string[]
   query: string
 }
 
+export type TaglessFacet = "area" | "trade" | "date" | "week"
+
 export const EMPTY_TAGLESS_FILTERS: TaglessFilters = {
-  area: "",
-  trade: "",
-  date: "",
-  week: "",
+  area: [],
+  trade: [],
+  date: [],
+  week: [],
   query: "",
 }
 
@@ -74,19 +76,78 @@ export function validateTaglessProcessPlan(table: ImportTable) {
   createTaglessTickets(table, "all-days")
 }
 
-export function filterTaglessTickets(tickets: readonly TicketData[], filters: TaglessFilters) {
+function facetValue(ticket: TicketData, facet: TaglessFacet) {
+  if (facet === "area") return ticketArea(ticket) || "Ohne Bereich"
+  if (facet === "trade") return ticket.trade || "Ohne Gewerk"
+  if (facet === "date") return ticket.date || "Ohne Datum"
+  return isoWeek(ticket.date || "") || "Ohne ISO-Woche"
+}
+
+function matchesTaglessFilters(
+  ticket: TicketData,
+  filters: TaglessFilters,
+  ignoredFacet?: TaglessFacet,
+) {
   const query = filters.query.trim().toLocaleLowerCase("de")
-  return tickets.filter((ticket) => {
-    const area = ticketArea(ticket)
-    if (filters.area && area !== filters.area) return false
-    if (filters.trade && (ticket.trade || "Ohne Gewerk") !== filters.trade) return false
-    if (filters.date && ticket.date !== filters.date) return false
-    if (filters.week && isoWeek(ticket.date || "") !== filters.week) return false
-    if (!query) return true
-    return [ticket.taskName, ticket.trade, area, ticket.date, ticket.description]
-      .filter(Boolean)
-      .join(" ")
-      .toLocaleLowerCase("de")
-      .includes(query)
-  })
+  for (const facet of ["area", "trade", "date", "week"] as const) {
+    if (
+      facet !== ignoredFacet &&
+      filters[facet].length &&
+      !filters[facet].includes(facetValue(ticket, facet))
+    ) {
+      return false
+    }
+  }
+  if (!query) return true
+  return [ticket.taskName, ticket.trade, ticketArea(ticket), ticket.date, ticket.description]
+    .filter(Boolean)
+    .join(" ")
+    .toLocaleLowerCase("de")
+    .includes(query)
+}
+
+export function filterTaglessTickets(tickets: readonly TicketData[], filters: TaglessFilters) {
+  return tickets.filter((ticket) => matchesTaglessFilters(ticket, filters))
+}
+
+export function taglessFacetOptions(
+  tickets: readonly TicketData[],
+  filters: TaglessFilters,
+  facet: TaglessFacet,
+) {
+  return [
+    ...new Set(
+      tickets
+        .filter((ticket) => matchesTaglessFilters(ticket, filters, facet))
+        .map((ticket) => facetValue(ticket, facet)),
+    ),
+  ].sort((left, right) => left.localeCompare(right, "de"))
+}
+
+export function normalizeTaglessFilters(
+  tickets: readonly TicketData[],
+  filters: TaglessFilters,
+  lockedFacet?: TaglessFacet,
+) {
+  const next: TaglessFilters = {
+    area: [...filters.area],
+    trade: [...filters.trade],
+    date: [...filters.date],
+    week: [...filters.week],
+    query: filters.query,
+  }
+  for (let pass = 0; pass < 4; pass += 1) {
+    let changed = false
+    for (const facet of ["area", "trade", "date", "week"] as const) {
+      if (facet === lockedFacet) continue
+      const available = new Set(taglessFacetOptions(tickets, next, facet))
+      const retained = next[facet].filter((value) => available.has(value))
+      if (retained.length !== next[facet].length) {
+        next[facet] = retained
+        changed = true
+      }
+    }
+    if (!changed) break
+  }
+  return next
 }
