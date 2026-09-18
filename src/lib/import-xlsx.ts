@@ -145,14 +145,17 @@ function isWeekend(d: Date) {
   return day === 0 || day === 6
 }
 
-type GenerateMode = "auto" | "weekdays" | "all-days"
+export type GenerateMode = "auto" | "weekdays" | "monday-saturday" | "all-days"
 
-function buildDaySeries(start: Date, end: Date, mode: Exclude<GenerateMode, "auto">) {
+export function buildDaySeries(start: Date, end: Date, mode: Exclude<GenerateMode, "auto">) {
   const out: Date[] = []
   const cur = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate()))
   const last = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate()))
   while (cur.getTime() <= last.getTime()) {
-    if (mode === "all-days" || !isWeekend(cur)) out.push(new Date(cur))
+    const day = cur.getUTCDay()
+    if (mode === "all-days" || (mode === "monday-saturday" ? day !== 0 : !isWeekend(cur))) {
+      out.push(new Date(cur))
+    }
     cur.setUTCDate(cur.getUTCDate() + 1)
   }
   return out

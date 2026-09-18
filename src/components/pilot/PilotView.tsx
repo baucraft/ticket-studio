@@ -123,7 +123,13 @@ function errorNotice(error: unknown): Notice {
   }
 }
 
-function Login({ onLogin }: { onLogin: (username: string, password: string) => Promise<void> }) {
+function Login({
+  onLogin,
+  onBusyChange,
+}: {
+  onLogin: (username: string, password: string) => Promise<void>
+  onBusyChange: (busy: boolean) => void
+}) {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [busy, setBusy] = useState(false)
@@ -132,6 +138,7 @@ function Login({ onLogin }: { onLogin: (username: string, password: string) => P
   const submit = async (event: FormEvent) => {
     event.preventDefault()
     setBusy(true)
+    onBusyChange(true)
     setError("")
     try {
       await onLogin(username, password)
@@ -139,6 +146,7 @@ function Login({ onLogin }: { onLogin: (username: string, password: string) => P
       setError(errorNotice(reason).message)
     } finally {
       setBusy(false)
+      onBusyChange(false)
     }
   }
 
@@ -194,8 +202,10 @@ function Login({ onLogin }: { onLogin: (username: string, password: string) => P
 
 export function PilotView({
   onWorkflowActiveChange,
+  onRequestActiveChange,
 }: {
   onWorkflowActiveChange?: (active: boolean) => void
+  onRequestActiveChange?: (active: boolean) => void
 }) {
   const forecast = initialForecast()
   const [auth, setAuth] = useState<"checking" | "anonymous" | "authenticated">("checking")
@@ -216,6 +226,7 @@ export function PilotView({
   const [physicalPlacementConfirmed, setPhysicalPlacementConfirmed] = useState(false)
   const [scopeTouched, setScopeTouched] = useState(false)
   const [busy, setBusy] = useState("")
+  const [loginBusy, setLoginBusy] = useState(false)
   const [notice, setNotice] = useState<Notice | null>(null)
   const [deltaPage, setDeltaPage] = useState(0)
   const workflowVersion = useRef(0)
@@ -484,29 +495,35 @@ export function PilotView({
       })
       return
     }
+    const version = workflowVersion.current
     setBusy(`pdf-${scope.key}`)
     try {
       const bytes = await createPilotCardsPdf(preparation, ids)
+      if (version !== workflowVersion.current) return
       downloadPilotPdf(
         bytes,
         `pilot-${safeFilename(scope.boardId)}-karten-r${revision.revision}.pdf`,
       )
     } catch (error) {
+      if (version !== workflowVersion.current) return
       setNotice(errorNotice(error))
     } finally {
-      setBusy("")
+      if (version === workflowVersion.current) setBusy("")
     }
   }
 
   const downloadMarker = async (scope: BoardScope, preparation: PilotPrintPreparation) => {
+    const version = workflowVersion.current
     setBusy(`marker-${scope.key}`)
     try {
       const bytes = await createPilotBoardMarkerPdf(preparation)
+      if (version !== workflowVersion.current) return
       downloadPilotPdf(bytes, `pilot-${safeFilename(scope.boardId)}-tafelmarker.pdf`)
     } catch (error) {
+      if (version !== workflowVersion.current) return
       setNotice(errorNotice(error))
     } finally {
-      setBusy("")
+      if (version === workflowVersion.current) setBusy("")
     }
   }
 
@@ -558,7 +575,7 @@ export function PilotView({
   }
 
   const preparedCount = scopes.filter((scope) => preparations[scope.key]).length
-  const scopeLocked = busy === "sync" || busy === "activate" || busy.startsWith("prepare-")
+  const scopeLocked = Boolean(busy)
   const forecastTouched = Boolean(
     revision &&
     (forecastStart !== revision.source.forecastStart ||
@@ -580,7 +597,18 @@ export function PilotView({
     onWorkflowActiveChange?.(workflowActive)
   }, [onWorkflowActiveChange, workflowActive])
 
-  useEffect(() => () => onWorkflowActiveChange?.(false), [onWorkflowActiveChange])
+  useEffect(() => {
+    onRequestActiveChange?.(auth === "checking" || loginBusy || Boolean(busy))
+  }, [auth, busy, loginBusy, onRequestActiveChange])
+
+  useEffect(
+    () => () => {
+      workflowVersion.current += 1
+      onWorkflowActiveChange?.(false)
+      onRequestActiveChange?.(false)
+    },
+    [onRequestActiveChange, onWorkflowActiveChange],
+  )
 
   if (auth === "checking") {
     return (
@@ -593,7 +621,7 @@ export function PilotView({
       </div>
     )
   }
-  if (auth === "anonymous") return <Login onLogin={login} />
+  if (auth === "anonymous") return <Login onLogin={login} onBusyChange={setLoginBusy} />
 
   const deltaById = new Map(revision?.delta.map((item) => [item.sourcePlanCardId, item]))
   const cardsById = new Map(revision?.source.cards.map((card) => [card.sourcePlanCardId, card]))
@@ -1173,7 +1201,7 @@ export function PilotView({
                           variant="outline"
                           className="bg-white"
                           onClick={() => void downloadCards(scope, preparation)}
-                          disabled={busy === `pdf-${scope.key}`}
+                          disabled={Boolean(busy)}
                         >
                           <Download /> Karten-PDF
                         </Button>
@@ -1181,7 +1209,7 @@ export function PilotView({
                           variant="outline"
                           className="bg-white"
                           onClick={() => void downloadMarker(scope, preparation)}
-                          disabled={busy === `marker-${scope.key}`}
+                          disabled={Boolean(busy)}
                         >
                           <Download /> Tafelmarker
                         </Button>

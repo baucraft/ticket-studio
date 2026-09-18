@@ -2,7 +2,7 @@ import { FileCode, LayoutGrid, Presentation, Workflow } from "lucide-react"
 import { useEffect, useState } from "react"
 
 import { StudioView } from "@/components/studio/StudioView"
-import { PilotView } from "@/components/pilot/PilotView"
+import { PilotStudioView } from "@/components/pilot/PilotStudioView"
 import { TemplateView } from "@/components/template/TemplateView"
 import { TagOnlyTargetView } from "@/components/target/TagOnlyTargetView"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -10,19 +10,24 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 export default function App() {
   const [tab, setTab] = useState("template")
   const [pilotWorkflowActive, setPilotWorkflowActive] = useState(false)
+  const [pilotRequestActive, setPilotRequestActive] = useState(false)
 
   const scrollablePage = tab === "target" || tab === "pilot"
 
   useEffect(() => {
     const guardReload = (event: BeforeUnloadEvent) => {
-      if (!pilotWorkflowActive) return
+      if (!pilotWorkflowActive && !pilotRequestActive) return
       event.preventDefault()
     }
     window.addEventListener("beforeunload", guardReload)
     return () => window.removeEventListener("beforeunload", guardReload)
-  }, [pilotWorkflowActive])
+  }, [pilotRequestActive, pilotWorkflowActive])
 
   const changeTab = (nextTab: string) => {
+    if (tab === "pilot" && nextTab !== "pilot" && pilotRequestActive) {
+      window.alert("Die laufende Studio-Aktion muss vor dem Wechsel abgeschlossen werden.")
+      return
+    }
     if (
       tab === "pilot" &&
       nextTab !== "pilot" &&
@@ -33,6 +38,7 @@ export default function App() {
     ) {
       return
     }
+    if (nextTab === "pilot") setPilotRequestActive(true)
     setTab(nextTab)
   }
 
@@ -54,7 +60,7 @@ export default function App() {
             <div className="text-lg font-semibold tracking-tight">Ticket Studio</div>
             <div className="text-xs text-muted-foreground">
               {tab === "pilot"
-                ? "LCMD synchronisieren → Delta verstehen → Tafeln vorbereiten → PDF drucken"
+                ? "Quelle waehlen → Karten filtern → Auswahl pruefen → PDF drucken"
                 : tab === "target"
                   ? "Isoliertes Tag-only-Zielbild fuer DEMO-04"
                   : "Upload template → Import Excel → Preview → Export PDF"}
@@ -91,7 +97,10 @@ export default function App() {
           </TabsContent>
 
           <TabsContent value="pilot" className="mt-4 min-h-0 flex-1">
-            <PilotView onWorkflowActiveChange={setPilotWorkflowActive} />
+            <PilotStudioView
+              onWorkflowActiveChange={setPilotWorkflowActive}
+              onRequestActiveChange={setPilotRequestActive}
+            />
           </TabsContent>
 
           <TabsContent
