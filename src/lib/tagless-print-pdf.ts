@@ -13,7 +13,6 @@ import type { TicketData } from "@/lib/ticket-types"
 
 const FIXED_DATE = new Date("2026-09-18T00:00:00.000Z")
 const DEFAULT_TRADE_COLOR = "#0f766e"
-const TAGLESS_TITLE_SIZE_MM = 3.2
 
 export function taglessPdfTradeColor(value?: string) {
   const match = (value || DEFAULT_TRADE_COLOR).match(/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i)
@@ -45,15 +44,14 @@ export async function createTaglessCardsPdf(tickets: readonly TicketData[]) {
         font,
         bold,
         {
+          uid: ticket.taskId,
           activity: ticket.taskName,
-          task: ticket.description,
           trade: ticket.trade,
           area: ticketArea(ticket),
           date: ticket.date,
         },
         undefined,
         taglessPdfTradeColor(ticket.tradeColor),
-        TAGLESS_TITLE_SIZE_MM,
       )
     } catch (error) {
       const message = error instanceof Error ? error.message : "unbekannter Renderfehler"

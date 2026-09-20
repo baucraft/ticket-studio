@@ -55,29 +55,25 @@ export function PilotStudioView({
   return (
     <div className="space-y-4">
       <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-        <p className="text-xs font-semibold tracking-[0.18em] text-teal-700 uppercase">
-          Kartenquelle
-        </p>
-        <h1 className="mt-1 text-xl font-semibold tracking-tight">
-          Ein Studio, zwei getrennte Wege
-        </h1>
+        <p className="brand-kicker text-xs font-semibold tracking-[0.18em] uppercase">Quelle</p>
+        <h1 className="mt-1 text-xl font-semibold tracking-tight">Woher kommen die Karten?</h1>
         <p className="mt-1 max-w-3xl text-sm text-slate-600">
-          Die Quelle bestimmt Identitaet, Druckvertrag und Folgeschritte. Beim Wechsel werden lokale
-          Auswahl und vorbereitete Druckauftraege nicht uebernommen.
+          Waehlen Sie LCMD oder eine Excel-Datei. Eine begonnene Auswahl bleibt beim Wechsel nicht
+          erhalten.
         </p>
         <div className="mt-4 grid gap-3 lg:grid-cols-2">
           <button
             type="button"
             aria-pressed={source === "lcmd"}
             disabled={requestActive && source !== "lcmd"}
-            className={`flex min-h-24 items-start gap-3 rounded-xl border p-4 text-left transition ${source === "lcmd" ? "border-teal-600 bg-teal-50 ring-2 ring-teal-100" : "border-slate-200 hover:bg-slate-50"}`}
+            className={`brand-source-card flex min-h-24 items-start gap-3 rounded-xl border p-4 text-left transition ${source === "lcmd" ? "is-selected" : "border-slate-200 hover:bg-slate-50"}`}
             onClick={() => changeSource("lcmd")}
           >
-            <Database className="mt-0.5 size-5 shrink-0 text-teal-700" />
+            <Database className="brand-kicker mt-0.5 size-5 shrink-0" />
             <span>
               <strong className="block">LCMD mit Tags</strong>
               <span className="mt-1 block text-xs leading-relaxed text-slate-600">
-                Pilot-Login, Backend-IDs, Manifestbindung, Tagvergabe und Analyzer-Erwartungsmenge.
+                Karten aus LCMD mit Tags fuer die gemeinsame Auswertung.
               </span>
             </span>
           </button>
@@ -85,14 +81,14 @@ export function PilotStudioView({
             type="button"
             aria-pressed={source === "process-plan"}
             disabled={requestActive && source !== "process-plan"}
-            className={`flex min-h-24 items-start gap-3 rounded-xl border p-4 text-left transition ${source === "process-plan" ? "border-sky-600 bg-sky-50 ring-2 ring-sky-100" : "border-slate-200 hover:bg-slate-50"}`}
+            className={`brand-source-card flex min-h-24 items-start gap-3 rounded-xl border p-4 text-left transition ${source === "process-plan" ? "is-selected" : "border-slate-200 hover:bg-slate-50"}`}
             onClick={() => changeSource("process-plan")}
           >
-            <FileSpreadsheet className="mt-0.5 size-5 shrink-0 text-sky-700" />
+            <FileSpreadsheet className="brand-kicker mt-0.5 size-5 shrink-0" />
             <span>
-              <strong className="block">Prozessplan-XLSX ohne Tags</strong>
+              <strong className="block">Excel-Datei (XLSX) ohne Tags</strong>
               <span className="mt-1 block text-xs leading-relaxed text-slate-600">
-                Rein lokale Koordinationskarten ohne Codes, Tag-IDs, Manifest oder Analyzerbindung.
+                Karten aus einer Excel-Datei, nur fuer den lokalen Ausdruck.
               </span>
             </span>
           </button>

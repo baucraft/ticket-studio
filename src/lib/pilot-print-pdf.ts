@@ -22,6 +22,7 @@ const CARD_MARKER_MM = 18
 const BOARD_MARKER_MM = 36
 const FIXED_DATE = new Date("2026-09-13T00:00:00.000Z")
 const TRADE_COLOR = rgb(0.04, 0.38, 0.42)
+const UNKNOWN_TRADE_COLOR = rgb(0.45, 0.48, 0.52)
 
 export type PilotMarkerAssetLoader = (filename: string) => Promise<Uint8Array>
 
@@ -148,10 +149,26 @@ function drawCard(
   doneMarker: MarkerAsset,
 ) {
   const markerCanvasMm = (CARD_MARKER_MM * 13) / 11
-  drawPilotCardFace(page, font, bold, card, {
-    drawActive: () => drawMarker(page, activeMarker, PILOT_CARD_SHORT_MM - markerCanvasMm - 3, 91),
-    drawDone: () => drawMarker(page, doneMarker, 3, 7, true),
-  })
+  const match = card.tradeColor?.match(/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/)
+  const tradeColor = match
+    ? rgb(
+        Number.parseInt(match[1]!, 16) / 255,
+        Number.parseInt(match[2]!, 16) / 255,
+        Number.parseInt(match[3]!, 16) / 255,
+      )
+    : UNKNOWN_TRADE_COLOR
+  drawPilotCardFace(
+    page,
+    font,
+    bold,
+    { ...card, uid: card.sourceActivityId },
+    {
+      drawActive: () =>
+        drawMarker(page, activeMarker, PILOT_CARD_SHORT_MM - markerCanvasMm - 3, 91),
+      drawDone: () => drawMarker(page, doneMarker, 3, 7, true),
+    },
+    tradeColor,
+  )
 }
 
 function setMetadata(document: PDFDocument, preparation: PilotPrintPreparation, subject: string) {

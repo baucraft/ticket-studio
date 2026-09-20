@@ -1,7 +1,16 @@
-import { decodePDFRawStream, PDFDict, PDFDocument, PDFName, PDFNumber, PDFRawStream } from "pdf-lib"
+import {
+  decodePDFRawStream,
+  PDFDict,
+  PDFDocument,
+  PDFName,
+  PDFNumber,
+  PDFRawStream,
+  StandardFonts,
+} from "pdf-lib"
 import { describe, expect, it } from "vitest"
 
 import { aoaToImportTable } from "@/lib/import-xlsx"
+import { cardVisibleMetaLine, mm } from "@/lib/pilot-card-layout"
 import { createTaglessCardsPdf } from "@/lib/tagless-print-pdf"
 import {
   createTaglessTickets,
@@ -75,6 +84,66 @@ function textOperators(content: string) {
   return [...content.matchAll(/<([0-9A-F]+)> Tj/g)].map((match) =>
     Buffer.from(match[1]!, "hex").toString("latin1"),
   )
+}
+
+function textPlacements(content: string) {
+  return [
+    ...content.matchAll(
+      /\/(Helvetica(?:-Bold)?)-\d+ ([\d.]+) Tf\n24 TL\n[-+\d.e]+ [-+\d.e]+ [-+\d.e]+ ([-+\d.e]+) [-+\d.e]+ ([-+\d.e]+) Tm\n<([0-9A-F]+)> Tj/g,
+    ),
+  ].map((match) => ({
+    text: Buffer.from(match[5]!, "hex").toString("latin1"),
+    size: Number(match[2]),
+    y: Number(match[4]),
+    rotated: Number(match[3]) < 0,
+    bold: match[1] === "Helvetica-Bold",
+  }))
+}
+
+async function expectTaglessTextClearance(content: string) {
+  const metricsDocument = await PDFDocument.create()
+  const normal = await metricsDocument.embedFont(StandardFonts.Helvetica)
+  const bold = await metricsDocument.embedFont(StandardFonts.HelveticaBold)
+  const placements = textPlacements(content)
+
+  for (const rotated of [false, true]) {
+    const lines = placements
+      .filter(
+        (placement) =>
+          placement.rotated === rotated &&
+          placement.y / (72 / 25.4) >= (rotated ? 14 : 88) &&
+          placement.y / (72 / 25.4) <= (rotated ? 32 : 106),
+      )
+      .map((placement) => {
+        const font = placement.bold ? bold : normal
+        const ascent = font.heightAtSize(placement.size, { descender: false })
+        return {
+          ...placement,
+          block: placement.bold ? "title" : "meta",
+          depth: rotated ? placement.y : -placement.y,
+          ascent,
+          descent: font.heightAtSize(placement.size) - ascent,
+        }
+      })
+      .sort((left, right) => left.depth - right.depth)
+
+    expect(lines.filter((line) => line.block === "title").length).toBeGreaterThan(0)
+    expect(lines.filter((line) => line.block === "meta").length).toBeGreaterThan(0)
+    const baselineOrigin = lines[0]!.depth
+    expect(lines[0]!.depth - baselineOrigin - lines[0]!.ascent).toBeGreaterThanOrEqual(
+      -mm(3) - 0.000001,
+    )
+    expect(lines.at(-1)!.depth - baselineOrigin + lines.at(-1)!.descent).toBeLessThanOrEqual(
+      mm(14) + 0.000001,
+    )
+    for (let index = 1; index < lines.length; index += 1) {
+      const previous = lines[index - 1]!
+      const current = lines[index]!
+      const clearance = current.depth - current.ascent - (previous.depth + previous.descent)
+      const requiredMm = previous.block === current.block ? 0.4 : 0.8
+      expect(clearance).toBeGreaterThanOrEqual(mm(requiredMm) - 0.000001)
+    }
+  }
 }
 
 describe("tagless process-plan workflow", () => {
@@ -202,6 +271,12 @@ describe("tagless process-plan workflow", () => {
     expect(
       document.getPage(0).node.lookup(PDFName.of("TaglessBothCardEnds"), PDFNumber).asNumber(),
     ).toBe(1)
+    expect(
+      document.getPage(0).node.lookup(PDFName.of("TaglessInnerShortMm"), PDFNumber).asNumber(),
+    ).toBe(62.5)
+    expect(
+      document.getPage(0).node.lookup(PDFName.of("TaglessInnerLongMm"), PDFNumber).asNumber(),
+    ).toBe(117)
     expect(document.getPage(0).node.get(PDFName.of("PilotActiveTagId"))).toBeUndefined()
     expect(document.getPage(0).node.get(PDFName.of("PilotDoneTagId"))).toBeUndefined()
 
@@ -209,8 +284,12 @@ describe("tagless process-plan workflow", () => {
     const secondText = textOperators(embeddedCardContent(document, 1))
     expect(firstText.filter((value) => value === "Waende stellen")).toHaveLength(2)
     expect(secondText.filter((value) => value === "Waende stellen")).toHaveLength(2)
-    expect(firstText.join(" ")).toContain("Material bereitstellen")
-    expect(firstText.join(" ")).not.toMatch(/Tag|Code| ID /i)
+    expect(firstText.join(" ").match(/ID 101 \| Trockenbau \| Nord \/ Ebene 1/g)).toHaveLength(2)
+    expect(firstText.join(" ")).not.toContain("KW 38/26-1")
+    expect(firstText.join(" ")).not.toContain("ID: 101")
+    expect(firstText.join(" ")).not.toContain(`ID ${chosen[0]!.ticketId}`)
+    expect(firstText.join(" ")).not.toContain("Material bereitstellen")
+    expect(firstText.join(" ")).not.toMatch(/Tag|Code/i)
     expect(secondText.join(" ")).not.toContain("Leitungen montieren")
     expect(Buffer.from(bytes).toString("latin1")).not.toMatch(/Pilot(?:Active|Done)TagId/)
   })
@@ -228,11 +307,45 @@ describe("tagless process-plan workflow", () => {
     expect(electrical.tradeColor).toBe("#0369a1")
     expect(dryConstructionContent).toMatch(/0\.0588\d* 0\.4627\d* 0\.4313\d* rg/)
     expect(electricalContent).toMatch(/0\.0117\d* 0\.4117\d* 0\.6313\d* rg/)
-    expect(dryConstructionContent).toMatch(/0\.86 0\.96 0\.9 rg/)
-    expect(electricalContent).toMatch(/0\.86 0\.96 0\.9 rg/)
+    expect(dryConstructionContent).toMatch(
+      /0\.8509803921568627 0\.9764705882352941 0\.615686274509804 rg/,
+    )
+    expect(electricalContent).toMatch(
+      /0\.8509803921568627 0\.9764705882352941 0\.615686274509804 rg/,
+    )
     expect(dryConstructionContent).toMatch(/9\.0708\d* Tf/)
     expect(electricalContent).toMatch(/9\.0708\d* Tf/)
     expect(dryConstructionContent).not.toMatch(/0\.0117\d* 0\.4117\d* 0\.6313\d* rg/)
     expect(electricalContent).not.toMatch(/0\.0588\d* 0\.4627\d* 0\.4313\d* rg/)
+  })
+
+  it.each([
+    {
+      name: "one-line title and meta",
+      taskName: "Kurzmontage",
+      trade: "Elektro",
+      area: { level1: "Nord" },
+    },
+    {
+      name: "multi-line title and meta",
+      taskName: "Brandschutzabschottungen fachgerecht montieren und pruefen",
+      trade: "Technische Gebaeudeausruestung mit langem Gewerkenamen",
+      area: { path: "Bauteil Nord / Ebene 1 / Installationsschacht" },
+      taskId: "Vorgang-0000000000000000000000000000000000000001",
+    },
+  ])("keeps measured tagless text clearance for $name on both card ends", async (sample) => {
+    const ticket = createTaglessTickets(processPlanTable(), "weekdays")[0]!
+    const document = await PDFDocument.load(
+      await createTaglessCardsPdf([{ ...ticket, ...sample, ticketId: `clearance-${sample.name}` }]),
+    )
+    const content = embeddedCardContent(document, 0)
+    await expectTaglessTextClearance(content)
+    expect(textOperators(content).join(" ")).toContain(
+      cardVisibleMetaLine(
+        sample.taskId ?? ticket.taskId,
+        sample.trade,
+        sample.area.path ?? sample.area.level1,
+      ),
+    )
   })
 })

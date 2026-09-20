@@ -1,6 +1,7 @@
 import { FileCode, LayoutGrid, Presentation, Workflow } from "lucide-react"
 import { useEffect, useState } from "react"
 
+import { BrandHeader } from "@/components/BrandHeader"
 import { StudioView } from "@/components/studio/StudioView"
 import { PilotStudioView } from "@/components/pilot/PilotStudioView"
 import { TemplateView } from "@/components/template/TemplateView"
@@ -44,35 +45,23 @@ export default function App() {
 
   return (
     <div
-      className={scrollablePage ? "min-h-svh" : "h-svh overflow-hidden"}
+      className={scrollablePage ? "flex min-h-svh flex-col" : "flex h-svh flex-col overflow-hidden"}
       style={{
         background:
           "radial-gradient(900px 600px at 10% 0%, oklch(0.985 0 0) 0%, transparent 60%), radial-gradient(700px 500px at 100% 20%, oklch(0.95 0.02 230) 0%, transparent 60%), linear-gradient(oklch(0.99 0 0), oklch(0.985 0 0))",
       }}
     >
+      <header className="brand-app-header">
+        <div className="brand-app-header__inner">
+          <BrandHeader appName="Ticket Studio" />
+        </div>
+      </header>
       <div
         className={`mx-auto flex max-w-[1600px] flex-col px-3 py-4 sm:px-4 sm:py-5 ${
-          scrollablePage ? "min-h-svh" : "h-full"
+          scrollablePage ? "w-full flex-1" : "min-h-0 w-full flex-1"
         }`}
       >
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <div className="text-lg font-semibold tracking-tight">Ticket Studio</div>
-            <div className="text-xs text-muted-foreground">
-              {tab === "pilot"
-                ? "Quelle waehlen → Karten filtern → Auswahl pruefen → PDF drucken"
-                : tab === "target"
-                  ? "Isoliertes Tag-only-Zielbild fuer DEMO-04"
-                  : "Upload template → Import Excel → Preview → Export PDF"}
-            </div>
-          </div>
-        </div>
-
-        <Tabs
-          value={tab}
-          onValueChange={changeTab}
-          className="mt-4 flex min-h-0 flex-1 flex-col gap-0"
-        >
+        <Tabs value={tab} onValueChange={changeTab} className="flex min-h-0 flex-1 flex-col gap-0">
           <TabsList className="pilot-navigation max-w-full justify-start overflow-x-auto">
             <TabsTrigger value="pilot" className="gap-2">
               <Workflow className="size-4" />

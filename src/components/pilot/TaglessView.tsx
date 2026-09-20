@@ -14,6 +14,7 @@ import { useDropzone } from "react-dropzone"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { CardPreview } from "@/components/pilot/CardPreview"
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -24,6 +25,11 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { readXlsxToTable } from "@/lib/import-xlsx"
+import {
+  cardMetaLine,
+  cardVisibleMetaLine,
+  COMPLETED_BACKGROUND_CSS,
+} from "@/lib/pilot-card-layout"
 import { createTaglessCardsPdf, downloadTaglessPdf } from "@/lib/tagless-print-pdf"
 import {
   createTaglessTickets,
@@ -53,61 +59,40 @@ function safeFilename(value: string) {
 function TaglessCardPreview({ ticket, done }: { ticket: TicketData; done: boolean }) {
   const color = ticket.tradeColor || "#0f766e"
   const area = ticketArea(ticket) || "Bereich nicht angegeben"
-  const end = (status: "Aktiv" | "Erledigt", rotate: boolean) => {
-    const completed = status === "Erledigt"
-    return (
-      <div
-        className="grid min-h-0 border-t-8 px-4 py-3"
-        data-card-status={completed ? "done" : "active"}
-        style={{
-          borderColor: color,
-          background: completed ? "rgb(219 245 230)" : `color-mix(in srgb, ${color} 10%, white)`,
-          transform: rotate ? "rotate(180deg)" : undefined,
-        }}
-      >
-        <div
-          className="text-[10px] font-bold tracking-[0.14em] uppercase"
-          style={{ color: completed ? "rgb(13 82 46)" : color }}
-        >
-          {status}
-        </div>
-        <strong
-          className={`mt-2 text-lg leading-tight ${completed ? "text-green-950" : "text-slate-950"}`}
-        >
-          {ticket.taskName}
-        </strong>
-        <span
-          className={`mt-2 text-[10px] leading-relaxed ${completed ? "text-green-900" : "text-slate-600"}`}
-        >
-          {ticket.trade || "Gewerk nicht angegeben"} / {area}
-        </span>
-      </div>
-    )
-  }
+  const meta = cardVisibleMetaLine(ticket.taskId, ticket.trade, area)
   return (
     <div className="mx-auto w-full max-w-[390px]">
       <div className="mb-2 flex justify-between text-xs text-slate-500">
         <span>66 x 120 mm / ohne Codes</span>
         <span>{done ? "Erledigt oben" : "Aktiv oben"}</span>
       </div>
-      <div
-        className={`grid aspect-[66/120] grid-rows-[27%_46%_27%] overflow-hidden rounded-sm border border-slate-400 bg-white shadow-xl transition-transform duration-500 ${done ? "rotate-180" : ""}`}
-        aria-label={
+      <CardPreview
+        title={ticket.taskName}
+        meta={meta}
+        color={color}
+        completedBackground={COMPLETED_BACKGROUND_CSS}
+        activeStatusColor={color}
+        completedStatusColor="rgb(13 82 46)"
+        completedTitleClassName="text-green-950"
+        completedMetaClassName="text-green-900"
+        rotated={done}
+        ariaLabel={
           done ? "Taglose Karte in Erledigt-Orientierung" : "Taglose Karte in Aktiv-Orientierung"
         }
-      >
-        {end("Aktiv", false)}
-        <div className="flex flex-col bg-white px-4 py-5 text-xs text-slate-700">
-          <strong>{ticket.date ? `${isoWeek(ticket.date)} / ${ticket.date}` : "Ohne Datum"}</strong>
-          <span className="mt-4 border-b border-slate-300 pb-1">Kommentar</span>
-          <span className="mt-5 border-b border-slate-300" />
-          <span className="mt-5 border-b border-slate-300" />
-          <span className="mt-auto text-[10px] text-slate-400">
-            Lokale Koordinationskarte, keine Produktidentitaet
-          </span>
-        </div>
-        {end("Erledigt", true)}
-      </div>
+        middle={
+          <div className="flex min-h-0 flex-col bg-white px-4 py-5 text-xs text-slate-700">
+            <strong>
+              {ticket.date ? `${isoWeek(ticket.date)} / ${ticket.date}` : "Ohne Datum"}
+            </strong>
+            <span className="mt-4 border-b border-slate-300 pb-1">Kommentar</span>
+            <span className="mt-5 border-b border-slate-300" />
+            <span className="mt-5 border-b border-slate-300" />
+            <span className="mt-auto text-[10px] text-slate-400">
+              Lokale Koordinationskarte, keine Produktidentitaet
+            </span>
+          </div>
+        }
+      />
     </div>
   )
 }
@@ -360,8 +345,8 @@ export function TaglessView({
       aria-busy={importing || exporting}
     >
       <header className="overflow-hidden border border-slate-800 bg-slate-950 p-5 text-white shadow-xl sm:p-7">
-        <Badge className="bg-sky-100 text-sky-900">Lokal / taglos</Badge>
-        <p className="mt-4 text-xs font-semibold tracking-[0.2em] text-sky-300 uppercase">
+        <Badge className="brand-badge">Lokal / taglos</Badge>
+        <p className="brand-kicker-dark mt-4 text-xs font-semibold tracking-[0.2em] uppercase">
           Prozessplan zu Koordinationskarten
         </p>
         <h2 className="mt-2 text-3xl font-semibold tracking-tight">
@@ -384,7 +369,7 @@ export function TaglessView({
 
       <section className="grid gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:grid-cols-[minmax(260px,0.8fr)_minmax(0,1.5fr)]">
         <div>
-          <p className="text-xs font-semibold tracking-wider text-sky-700 uppercase">01 / Import</p>
+          <p className="brand-kicker text-xs font-semibold tracking-wider uppercase">01 / Import</p>
           <h3 className="mt-1 text-xl font-semibold">Prozessplan-XLSX waehlen</h3>
           <p className="mt-1 text-sm text-slate-600">
             Plankartenexporte und unbekannte Tabellen werden abgewiesen. Ein erfolgreicher neuer
@@ -394,15 +379,13 @@ export function TaglessView({
         <div
           {...getRootProps({
             className: `flex flex-col justify-center rounded-xl border border-dashed p-4 transition-colors sm:flex-row sm:items-center sm:justify-between sm:gap-4 ${
-              isDragActive
-                ? "border-sky-500 bg-sky-50 ring-2 ring-sky-100"
-                : "border-slate-300 bg-slate-50"
+              isDragActive ? "brand-dropzone-active" : "border-slate-300 bg-slate-50"
             }`,
             "aria-label": "Prozessplan-XLSX hier ablegen oder auswaehlen",
           })}
         >
           <div className="flex min-w-0 items-center gap-3">
-            <FileSpreadsheet className="size-8 shrink-0 text-sky-700" />
+            <FileSpreadsheet className="brand-kicker size-8 shrink-0" />
             <div className="min-w-0">
               <strong className="block truncate text-sm">
                 {table?.fileName || "Noch keine Datei"}
@@ -419,7 +402,7 @@ export function TaglessView({
           <input {...getInputProps()} />
           <Button
             type="button"
-            className="mt-3 bg-sky-700 hover:bg-sky-800 sm:mt-0"
+            className="mt-3 sm:mt-0"
             disabled={importing || exporting}
             onClick={open}
           >
@@ -468,7 +451,7 @@ export function TaglessView({
           </fieldset>
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <Button
-              className="bg-amber-700 hover:bg-amber-800"
+              className="semantic-action bg-amber-700 hover:bg-amber-800"
               disabled={!dayMode || requestActive}
               onClick={applyCalendar}
             >
@@ -487,7 +470,7 @@ export function TaglessView({
       {appliedMode && (
         <section className="grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(360px,0.75fr)]">
           <div className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-            <p className="text-xs font-semibold tracking-wider text-sky-700 uppercase">
+            <p className="brand-kicker text-xs font-semibold tracking-wider uppercase">
               03 / Auswahl
             </p>
             <div className="mt-1 flex flex-wrap items-end justify-between gap-3">
@@ -560,7 +543,7 @@ export function TaglessView({
               Freitext
             </Label>
             <div className="relative mt-1.5">
-              <Search className="absolute top-3.5 left-3 size-4 text-slate-400" />
+              <Search className="absolute top-3.5 left-3 size-4 text-slate-500" />
               <Input
                 id="tagless-search"
                 type="search"
@@ -585,12 +568,12 @@ export function TaglessView({
                   return (
                     <div
                       key={ticket.ticketId}
-                      className={`grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2 p-2 sm:grid-cols-[auto_minmax(0,1fr)_auto] ${previewId === ticket.ticketId ? "bg-sky-50" : "bg-white"}`}
+                      className={`grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2 p-2 sm:grid-cols-[auto_minmax(0,1fr)_auto] ${previewId === ticket.ticketId ? "brand-selection" : "bg-white"}`}
                       style={{ "--trade-color": ticket.tradeColor || "#0f766e" } as CSSProperties}
                     >
                       <button
                         type="button"
-                        className={`flex size-11 items-center justify-center rounded-lg border ${checked ? "border-sky-700 bg-sky-700 text-white" : "border-slate-300 bg-white"}`}
+                        className={`brand-select-button flex size-11 items-center justify-center rounded-lg border ${checked ? "is-selected" : "border-slate-300 bg-white"}`}
                         aria-label={`${ticket.taskName} fuer Druck ${checked ? "abwaehlen" : "auswaehlen"}`}
                         aria-pressed={checked}
                         disabled={requestActive}
@@ -600,17 +583,23 @@ export function TaglessView({
                       </button>
                       <button
                         type="button"
-                        className="min-w-0 border-l-4 px-3 py-1 text-left"
+                        className="brand-interactive min-w-0 border-l-4 px-3 py-1 text-left"
                         style={{ borderColor: ticket.tradeColor || "#0f766e" }}
                         onClick={() => {
                           setPreviewId(ticket.ticketId)
                           setPreviewDone(false)
                         }}
                       >
-                        <strong className="block truncate text-sm">{ticket.taskName}</strong>
-                        <span className="mt-1 block truncate text-xs text-slate-500">
-                          {ticket.date} / {ticket.trade || "Ohne Gewerk"} /{" "}
-                          {ticketArea(ticket) || "Ohne Bereich"}
+                        <strong className="block text-sm break-words">{ticket.taskName}</strong>
+                        <span className="mt-1 block text-xs break-words whitespace-normal text-slate-500">
+                          {ticket.date
+                            ? cardMetaLine(
+                                ticket.taskId,
+                                ticket.date,
+                                ticket.trade,
+                                ticketArea(ticket),
+                              )
+                            : `ID ${ticket.taskId} | Ohne Datum | ${ticket.trade || "Gewerk nicht angegeben"} | ${ticketArea(ticket) || "Bereich nicht angegeben"}`}
                         </span>
                       </button>
                       <Badge variant="secondary" className="hidden sm:inline-flex">
@@ -629,7 +618,7 @@ export function TaglessView({
           </div>
 
           <aside className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-            <p className="text-xs font-semibold tracking-wider text-sky-700 uppercase">
+            <p className="brand-kicker text-xs font-semibold tracking-wider uppercase">
               04 / Vorschau
             </p>
             <div className="mt-1 flex flex-wrap items-start justify-between gap-3">
@@ -655,22 +644,22 @@ export function TaglessView({
                 </div>
               )}
             </div>
-            <div className="mt-5 rounded-xl border border-sky-200 bg-sky-50 p-4">
-              <strong className="text-sky-950">Druckauswahl: {selected.size} Karten</strong>
-              <p className="mt-1 text-xs leading-relaxed text-sky-900">
+            <div className="brand-callout mt-5 rounded-xl border p-4">
+              <strong className="text-slate-950">Druckauswahl: {selected.size} Karten</strong>
+              <p className="mt-1 text-xs leading-relaxed text-slate-700">
                 {selectedHidden > 0
                   ? `${selectedHidden} ausgewaehlte Karten sind durch die aktuellen Filter ausgeblendet und bleiben im Drucksatz.`
                   : "Alle ausgewaehlten Karten sind mit den aktuellen Filtern sichtbar."}
               </p>
               <Button
-                className="mt-3 w-full bg-sky-700 hover:bg-sky-800"
+                className="mt-3 w-full"
                 disabled={selected.size === 0 || requestActive}
                 onClick={() => void exportPdf()}
               >
                 {exporting ? <Loader2 className="animate-spin" /> : <Download />}
                 {exporting ? "PDF wird erzeugt..." : `${selected.size} ausgewaehlte Karten als PDF`}
               </Button>
-              <p className="mt-2 text-[11px] leading-relaxed text-sky-800">
+              <p className="mt-2 text-[11px] leading-relaxed text-slate-700">
                 Kein Manifest, keine Tagvergabe, keine Codes und keine Uebertragung an das Backend.
               </p>
             </div>

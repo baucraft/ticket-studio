@@ -3,6 +3,7 @@ export const PILOT_API_BASE = "/api/pilot/v1"
 export type PilotSession = {
   username: string
   sourceProjectIds: string[]
+  projectNames?: Record<string, string>
 }
 
 export type PilotPlanCard = {
@@ -15,6 +16,9 @@ export type PilotPlanCard = {
   company: string | null
   area: string | null
   sourceStatus: string | null
+  tradeColor?: string | null
+  cardNumber?: number | null
+  cardCount?: number | null
 }
 
 export type PilotDeltaKind =
@@ -38,6 +42,7 @@ export type PilotRevision = {
   predecessor: number
   source: {
     sourceProjectId: string
+    sourceProjectName?: string | null
     cards: PilotPlanCard[]
     processSha256: string
     cardSha256: string
@@ -61,6 +66,7 @@ export type PilotPrintPreparation = {
   requestId: string
   requestHash: string
   sourceProjectId: string
+  sourceProjectName?: string | null
   authority: string
   synthetic: boolean
   revision: number
@@ -75,6 +81,7 @@ export type PilotPrintPreparation = {
 export type PilotProjectState = {
   profile: "pilot-product-v1"
   sourceProjectId: string
+  sourceProjectName?: string | null
   activeRevision: number
   synthetic: boolean
   activePlacement:
@@ -150,8 +157,34 @@ function nullableString(value: unknown): string | null {
   return value === null ? null : string(value)
 }
 
+function optionalNullableString(value: unknown): string | null {
+  return value === undefined || value === null ? null : string(value)
+}
+
+function optionalPositiveInteger(value: unknown): number | null {
+  if (value === undefined || value === null) return null
+  const parsed = integer(value)
+  if (parsed <= 0) throw new PilotApiError(0, "invalid_api_response")
+  return parsed
+}
+
+function optionalTradeColor(value: unknown): string | null {
+  if (value === undefined || value === null) return null
+  const parsed = string(value)
+  if (!/^#[0-9a-f]{6}$/.test(parsed)) throw new PilotApiError(0, "invalid_api_response")
+  return parsed
+}
+
 function planCard(value: unknown): PilotPlanCard {
   const source = object(value)
+  const cardNumber = optionalPositiveInteger(source.cardNumber)
+  const cardCount = optionalPositiveInteger(source.cardCount)
+  if (
+    (cardNumber === null) !== (cardCount === null) ||
+    (cardNumber !== null && cardCount !== null && cardNumber > cardCount)
+  ) {
+    throw new PilotApiError(0, "invalid_api_response")
+  }
   return {
     sourcePlanCardId: string(source.sourcePlanCardId),
     sourceActivityId: string(source.sourceActivityId),
@@ -162,6 +195,9 @@ function planCard(value: unknown): PilotPlanCard {
     company: nullableString(source.company),
     area: nullableString(source.area),
     sourceStatus: nullableString(source.sourceStatus),
+    tradeColor: optionalTradeColor(source.tradeColor),
+    cardNumber,
+    cardCount,
   }
 }
 
@@ -203,6 +239,7 @@ export function parsePilotRevision(value: unknown): PilotRevision {
     predecessor: integer(source.predecessor),
     source: {
       sourceProjectId: string(sourceState.sourceProjectId),
+      sourceProjectName: optionalNullableString(sourceState.sourceProjectName),
       cards: sourceState.cards.map(planCard),
       processSha256: string(sourceState.processSha256),
       cardSha256: string(sourceState.cardSha256),
@@ -243,6 +280,7 @@ export function parsePilotPrintPreparation(value: unknown): PilotPrintPreparatio
     requestId: string(source.requestId),
     requestHash: string(source.requestHash),
     sourceProjectId: string(source.sourceProjectId),
+    sourceProjectName: optionalNullableString(source.sourceProjectName),
     authority: string(source.authority),
     synthetic: boolean(source.synthetic),
     revision: integer(source.revision),
@@ -264,12 +302,23 @@ function parseProjectState(value: unknown): PilotProjectState {
   let parsedPlacement: PilotProjectState["activePlacement"] = {}
   if (Object.keys(activePlacement).length > 0) {
     const boards = object(activePlacement.boards)
+    if (
+      activePlacement.activeRevision !== source.activeRevision ||
+      Object.keys(boards).length === 0
+    ) {
+      throw new PilotApiError(0, "invalid_api_response")
+    }
     parsedPlacement = {
       activeRevision: integer(activePlacement.activeRevision),
       boards: Object.fromEntries(
         Object.entries(boards).map(([boardId, preparation]) => {
           const parsed = parsePilotPrintPreparation(preparation)
-          if (parsed.boardId !== boardId) throw new PilotApiError(0, "invalid_api_response")
+          if (
+            parsed.boardId !== boardId ||
+            parsed.sourceProjectId !== source.sourceProjectId ||
+            parsed.revision !== source.activeRevision
+          )
+            throw new PilotApiError(0, "invalid_api_response")
           return [boardId, parsed]
         }),
       ),
@@ -278,6 +327,7 @@ function parseProjectState(value: unknown): PilotProjectState {
   return {
     profile: "pilot-product-v1",
     sourceProjectId: string(source.sourceProjectId),
+    sourceProjectName: optionalNullableString(source.sourceProjectName),
     activeRevision: integer(source.activeRevision),
     synthetic: boolean(source.synthetic),
     activePlacement: parsedPlacement,
@@ -336,9 +386,19 @@ export class PilotApi {
   async session(): Promise<PilotSession> {
     const payload = object(await this.call("/auth/session"))
     if (!Array.isArray(payload.sourceProjectIds)) throw new PilotApiError(0, "invalid_api_response")
+    let projectNames: Record<string, string> | undefined
+    if (payload.projectNames !== undefined) {
+      projectNames = Object.fromEntries(
+        Object.entries(object(payload.projectNames)).map(([projectId, name]) => [
+          projectId,
+          string(name),
+        ]),
+      )
+    }
     return {
       username: string(payload.username),
       sourceProjectIds: payload.sourceProjectIds.map(string),
+      ...(projectNames ? { projectNames } : {}),
     }
   }
 
@@ -415,7 +475,11 @@ export class PilotApi {
       boards: Object.fromEntries(
         Object.entries(boards).map(([boardId, value]) => {
           const preparation = parsePilotPrintPreparation(value)
-          if (preparation.boardId !== boardId || preparation.sourceProjectId !== sourceProjectId) {
+          if (
+            preparation.boardId !== boardId ||
+            preparation.sourceProjectId !== sourceProjectId ||
+            preparation.revision !== request.revision
+          ) {
             throw new PilotApiError(0, "invalid_api_response")
           }
           return [boardId, preparation]

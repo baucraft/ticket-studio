@@ -45,19 +45,30 @@
 }
 
 :root {
+  --brand-900: #002965;
+  --brand-700: #005aa7;
+  --brand-500: #009fe3;
+  --brand-focus-dark: #00ccff;
+  --ink: #404040;
+  --surface: #ffffff;
+  --surface-subtle: #f2f2f2;
+  --border-subtle: #e6e6e6;
+  --neutral-muted: #b2b2b2;
+  --brand-font:
+    system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, "DejaVu Sans", sans-serif;
   --radius: 0.625rem;
   --pilot-touch-target: 2.75rem;
   --pilot-section-gap: 1rem;
   --pilot-panel-radius: 1rem;
-  --pilot-focus-ring: #0369a1;
+  --pilot-focus-ring: var(--brand-700);
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
+  --primary: var(--brand-700);
+  --primary-foreground: var(--surface);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
@@ -65,9 +76,9 @@
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
+  --border: #cdcdcd;
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --ring: var(--brand-700);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -122,12 +133,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    font-family:
-      "IBM Plex Sans",
-      ui-sans-serif,
-      system-ui,
-      -apple-system,
-      sans-serif;
+    font-family: var(--brand-font);
     @apply bg-background text-foreground;
   }
 }
@@ -141,6 +147,162 @@
 }
 
 @layer components {
+  .brand-app-header {
+    display: flex;
+    min-height: 72px;
+    align-items: center;
+    border-bottom: 1px solid var(--border-subtle);
+    background: rgb(255 255 255 / 94%);
+    padding: 0 24px;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+
+  .brand-app-header__inner {
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+
+  .brand-header {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .brand-header__logo {
+    display: block;
+    width: 120px;
+    height: auto;
+    flex: 0 0 auto;
+  }
+
+  .brand-header__titles {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+  }
+
+  .brand-header__theme {
+    color: var(--brand-900);
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 20px;
+  }
+
+  .brand-header__app {
+    color: var(--ink);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 18px;
+  }
+
+  .brand-app-header :focus-visible {
+    outline: 3px solid var(--brand-700);
+    outline-offset: 2px;
+  }
+
+  .brand-source-card.is-selected {
+    border-color: var(--brand-700);
+    background: color-mix(in srgb, var(--brand-700) 8%, white);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand-700) 18%, white);
+  }
+
+  .brand-source-card:hover:not(:disabled) {
+    border-color: var(--brand-700);
+  }
+
+  .brand-source-card:active:not(:disabled) {
+    border-color: var(--brand-900);
+    background: color-mix(in srgb, var(--brand-700) 12%, white);
+  }
+
+  .brand-source-card:focus-visible {
+    outline: 3px solid var(--brand-700);
+    outline-offset: 2px;
+  }
+
+  .brand-source-card:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  [data-slot="button"][data-variant="default"]:hover:not(:disabled) {
+    background: var(--brand-900);
+  }
+
+  .pilot-navigation [data-slot="tabs-trigger"][data-state="active"] {
+    color: var(--brand-900);
+  }
+
+  .pilot-navigation [data-slot="tabs-trigger"][data-state="active"]::after {
+    background: var(--brand-700);
+  }
+
+  .pilot-workflow a {
+    color: var(--brand-700);
+  }
+
+  .pilot-workflow a:hover,
+  .pilot-workflow a:active {
+    color: var(--brand-900);
+  }
+
+  .pilot-workflow .brand-badge {
+    background: color-mix(in srgb, var(--brand-700) 12%, white);
+    color: var(--brand-900);
+  }
+
+  .brand-kicker {
+    color: var(--brand-700);
+  }
+
+  .brand-kicker-dark {
+    color: var(--brand-focus-dark);
+  }
+
+  .brand-selection,
+  .brand-interactive:hover {
+    background: color-mix(in srgb, var(--brand-700) 8%, white);
+  }
+
+  .brand-interactive:active {
+    background: color-mix(in srgb, var(--brand-700) 14%, white);
+  }
+
+  .brand-checkbox {
+    accent-color: var(--brand-700);
+  }
+
+  .brand-dropzone-active {
+    border-color: var(--brand-700);
+    background: color-mix(in srgb, var(--brand-700) 8%, white);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand-700) 18%, white);
+  }
+
+  .brand-select-button.is-selected {
+    border-color: var(--brand-700);
+    background: var(--brand-700);
+    color: white;
+  }
+
+  .brand-select-button.is-selected:hover,
+  .brand-select-button.is-selected:active {
+    border-color: var(--brand-900);
+    background: var(--brand-900);
+  }
+
+  .brand-callout {
+    border-color: color-mix(in srgb, var(--brand-700) 28%, white);
+    background: color-mix(in srgb, var(--brand-700) 8%, white);
+  }
+
+  .brand-callout__control {
+    border-color: color-mix(in srgb, var(--brand-700) 28%, white);
+  }
+
   .pilot-navigation [data-slot="tabs-trigger"] {
     min-height: var(--pilot-touch-target);
   }
@@ -234,7 +396,20 @@
   }
 
   .tag-only-controls {
-    @apply grid gap-4 lg:grid-cols-[220px_minmax(320px,1fr)_auto] lg:items-end;
+    @apply grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[220px_minmax(320px,1fr)_auto] lg:items-end;
+  }
+
+  .tag-only-controls > *,
+  .tag-only-controls label,
+  .tag-only-section-title > div {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .tag-only-controls select {
+    max-width: 100%;
+    min-width: 0;
+    width: 100%;
   }
 
   .tag-only-contract-counts {
@@ -397,6 +572,25 @@
 }
 
 @media (max-width: 640px) {
+  .tag-only-controls .grid,
+  .tag-only-controls label {
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .brand-app-header {
+    min-height: 64px;
+    padding: 0 16px;
+  }
+
+  .brand-header {
+    gap: 12px;
+  }
+
+  .brand-header__logo {
+    width: 96px;
+  }
+
   .pilot-navigation {
     width: 100%;
     overscroll-behavior-inline: contain;
@@ -414,4 +608,20 @@
   .pilot-workflow [role="alert"] button {
     width: auto;
   }
+}
+
+/* Unlayered rules reliably outrank Tailwind's layered outline/ring utilities. */
+:is(button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])):focus-visible {
+  outline: 3px solid var(--brand-700) !important;
+  outline-offset: 2px !important;
+}
+
+[data-slot="button"][data-variant="default"]:not(.semantic-action):not(:disabled) {
+  background: var(--brand-700) !important;
+  color: var(--surface) !important;
+}
+
+[data-slot="button"][data-variant="default"]:not(.semantic-action):hover:not(:disabled),
+[data-slot="button"][data-variant="default"]:not(.semantic-action):active:not(:disabled) {
+  background: var(--brand-900) !important;
 }
