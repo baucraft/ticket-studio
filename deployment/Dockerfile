@@ -8,7 +8,7 @@ RUN npm ci --ignore-scripts
 COPY index.html tsconfig.json tsconfig.app.json tsconfig.node.json vite.config.ts ./
 COPY src ./src
 COPY public ./public
-COPY scripts/verify-tag-only-assets.mjs scripts/verify-deployment-build.mjs ./scripts/
+COPY scripts/verify-tag-only-assets.mjs scripts/pilot-asset-source.mjs scripts/verify-pilot-assets.mjs scripts/verify-deployment-build.mjs ./scripts/
 
 RUN npm run build:deployment
 
