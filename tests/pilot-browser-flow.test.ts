@@ -34,6 +34,7 @@ import {
   normalizePilotFilters,
   PILOT_BOARD_CAPACITY,
   pilotActiveCards,
+  pilotCardIdsForPdf,
   pilotCardDisposition,
   pilotCardsInScope,
   pilotCardsToPrint,
@@ -737,6 +738,13 @@ describe("pilot browser flow", () => {
       "card-5",
       "card-6",
     ])
+    expect(pilotCardIdsForPdf(preparation, nextRevision, state)).toEqual([
+      "card-2",
+      "card-3",
+      "card-4",
+      "card-5",
+      "card-6",
+    ])
     const alreadyPlaced = {
       ...state,
       activeRevision: 2,
@@ -749,6 +757,17 @@ describe("pilot browser flow", () => {
       "reuse",
     )
     expect(pilotCardsToPrint(preparation, nextRevision, alreadyPlaced)).not.toContain("card-2")
+    const fullyPlaced = {
+      ...alreadyPlaced,
+      activePlacement: {
+        activeRevision: 2,
+        boards: { previous: { ...preparation, revision: 2 } },
+      },
+    }
+    expect(pilotCardsToPrint(preparation, nextRevision, fullyPlaced)).toEqual([])
+    expect(pilotCardIdsForPdf(preparation, nextRevision, fullyPlaced)).toEqual(
+      preparation.cards.map((card) => card.sourcePlanCardId),
+    )
   })
 
   it("rejects a print response whose backend identity order differs from the request", () => {

@@ -47,6 +47,18 @@ await page.getByRole("button", { name: "Anmelden" }).click()
 await page
   .getByRole("heading", { name: "Zeitraum waehlen, Karten drucken, Tafeln bestaetigen." })
   .waitFor()
+const desktopControls = await Promise.all([
+  page.locator("#pilot-project").boundingBox(),
+  page.locator("#forecast-start").boundingBox(),
+  page.locator("#forecast-end").boundingBox(),
+  page.getByRole("button", { name: "Karten aus LCMD laden", exact: true }).boundingBox(),
+])
+for (const box of desktopControls) assert.ok(box, "desktop control has no bounding box")
+const [projectControl, ...alignedControls] = desktopControls
+for (const box of alignedControls) {
+  assert.ok(Math.abs(box.y - projectControl.y) <= 1, "desktop control tops are not aligned")
+  assert.ok(Math.abs(box.height - projectControl.height) <= 1, "desktop control heights differ")
+}
 await page.setViewportSize({ width: 390, height: 844 })
 const mobileOverflow = await page.evaluate(
   () => document.documentElement.scrollWidth - window.innerWidth,
