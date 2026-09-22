@@ -210,6 +210,15 @@ export function pilotCardsToPrint(
     .map((card) => card.sourcePlanCardId)
 }
 
+export function pilotCardIdsForPdf(
+  preparation: PilotPrintPreparation,
+  revision: PilotRevision,
+  state: PilotProjectState,
+) {
+  const ids = pilotCardsToPrint(preparation, revision, state)
+  return ids.length ? ids : preparation.cards.map((card) => card.sourcePlanCardId)
+}
+
 export function assertPilotPrintPreparation(
   preparation: PilotPrintPreparation,
   request: PilotPrintRequest,

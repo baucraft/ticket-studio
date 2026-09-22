@@ -55,6 +55,7 @@ import {
   normalizePilotFilters,
   PILOT_BOARD_CAPACITY,
   pilotActiveCards,
+  pilotCardIdsForPdf,
   pilotCardDisposition,
   pilotCardsInScope,
   pilotCardsToPrint,
@@ -736,15 +737,7 @@ export function PilotView({
 
   const downloadCards = async (scope: BoardScope, preparation: PilotPrintPreparation) => {
     if (!revision || !project) return
-    const ids = pilotCardsToPrint(preparation, revision, project)
-    if (ids.length === 0) {
-      setNotice({
-        tone: "info",
-        message:
-          "Alle Karten dieser Tafel koennen physisch wiederverwendet werden. Kein Kartendruck erforderlich.",
-      })
-      return
-    }
+    const ids = pilotCardIdsForPdf(preparation, revision, project)
     const version = workflowVersion.current
     setBusy(`pdf-${scope.key}`)
     try {
@@ -962,7 +955,7 @@ export function PilotView({
         </div>
       )}
 
-      <section className="grid gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:grid-cols-[minmax(220px,0.7fr)_minmax(420px,1.5fr)_auto] lg:items-end">
+      <section className="grid gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:grid-cols-[minmax(220px,0.7fr)_minmax(420px,1.5fr)_auto] lg:items-start">
         <div className="grid gap-2">
           <Label htmlFor="pilot-project">Projekt</Label>
           <select
@@ -994,6 +987,7 @@ export function PilotView({
             <Input
               id="forecast-start"
               type="date"
+              className="h-10"
               value={forecastStart}
               disabled={scopeLocked}
               onChange={(event) => {
@@ -1007,6 +1001,7 @@ export function PilotView({
             <Input
               id="forecast-end"
               type="date"
+              className="h-10"
               value={forecastEnd}
               disabled={scopeLocked}
               onChange={(event) => {
@@ -1016,7 +1011,7 @@ export function PilotView({
             />
           </div>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 lg:pt-7">
           <Button
             className="h-10"
             onClick={() => void runSync()}
@@ -1685,7 +1680,7 @@ export function PilotView({
                           onClick={() => void downloadCards(scope, preparation)}
                           disabled={Boolean(busy)}
                         >
-                          <Download /> Karten-PDF
+                          <Download /> {paperIds.length === 0 ? "Karten-PDF erneut" : "Karten-PDF"}
                         </Button>
                         <Button
                           variant="outline"
