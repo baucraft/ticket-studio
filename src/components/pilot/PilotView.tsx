@@ -1011,24 +1011,30 @@ export function PilotView({
             />
           </div>
         </div>
-        <div className="flex flex-wrap gap-2 lg:pt-7">
-          <Button
-            className="h-10"
-            onClick={() => void runSync()}
-            disabled={!project || scopeLocked || forecastEnd < forecastStart}
-          >
-            <RefreshCw /> {busy === "sync" ? "Karten werden geladen..." : "Karten aus LCMD laden"}
-          </Button>
-          {pendingSync && (
+        <div className="grid gap-2">
+          <Label aria-hidden="true" className="invisible hidden lg:flex">
+            Aktion
+          </Label>
+          <div className="flex flex-wrap gap-2">
             <Button
-              variant="outline"
               className="h-10"
-              onClick={() => void runSync(true)}
-              disabled={scopeLocked}
+              onClick={() => void runSync()}
+              disabled={!project || scopeLocked || forecastEnd < forecastStart}
             >
-              <RotateCcw /> Gleich wiederholen
+              <RefreshCw />
+              {busy === "sync" ? "Karten werden geladen..." : "Karten aus LCMD laden"}
             </Button>
-          )}
+            {pendingSync && (
+              <Button
+                variant="outline"
+                className="h-10"
+                onClick={() => void runSync(true)}
+                disabled={scopeLocked}
+              >
+                <RotateCcw /> Gleich wiederholen
+              </Button>
+            )}
+          </div>
         </div>
       </section>
 
