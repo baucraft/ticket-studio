@@ -173,6 +173,15 @@ export function pilotActiveCards(state: PilotProjectState) {
   return result
 }
 
+export function pilotPhysicalPlacementConfirmed(state: PilotProjectState) {
+  if (!("boards" in state.activePlacement)) return false
+  if (state.physicalPlacementConfirmed !== undefined) return state.physicalPlacementConfirmed
+  if (state.activePlacement.physicalPlacementConfirmed !== undefined) {
+    return state.activePlacement.physicalPlacementConfirmed
+  }
+  return true
+}
+
 export function pilotCardDisposition(
   delta: PilotDelta,
   active: ReturnType<typeof pilotActiveCards>,

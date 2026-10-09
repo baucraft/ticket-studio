@@ -60,6 +60,7 @@ import {
   pilotCardsInScope,
   pilotCardsToPrint,
   pilotFacetOptions,
+  pilotPhysicalPlacementConfirmed,
   type PilotCardFacet,
   type PilotCardFilters,
 } from "@/lib/pilot-workflow"
@@ -384,7 +385,10 @@ export function PilotView({
   const [pendingActivation, setPendingActivation] = useState<
     Parameters<PilotApi["activate"]>[1] | null
   >(null)
-  const [physicalPlacementConfirmed, setPhysicalPlacementConfirmed] = useState(false)
+  const [pendingPlacementConfirmation, setPendingPlacementConfirmation] = useState<
+    Parameters<PilotApi["confirmPhysicalPlacement"]>[1] | null
+  >(null)
+  const [physicalPlacementChecked, setPhysicalPlacementChecked] = useState(false)
   const [scopeTouched, setScopeTouched] = useState(false)
   const [busy, setBusy] = useState("")
   const [loginBusy, setLoginBusy] = useState(false)
@@ -396,6 +400,12 @@ export function PilotView({
   const activePrintRequests = useRef<Record<string, string>>({})
   const noticeRef = useRef<HTMLDivElement>(null)
 
+  useEffect(() => {
+    // A checkbox checked for an older placement must never release a new one.
+    setPhysicalPlacementChecked(false)
+    setPendingPlacementConfirmation(null)
+  }, [project?.activePlacementSha256, project?.activeRevision, projectId])
+
   const invalidatePreparedPlacement = () => {
     workflowVersion.current += 1
     scopeVersions.current = {}
@@ -403,7 +413,6 @@ export function PilotView({
     setPreparations({})
     setPrintRequests({})
     setPendingActivation(null)
-    setPhysicalPlacementConfirmed(false)
     return workflowVersion.current
   }
 
@@ -421,7 +430,6 @@ export function PilotView({
       return next
     })
     setPendingActivation(null)
-    setPhysicalPlacementConfirmed(false)
   }
 
   const resetProjectWorkflow = () => {
@@ -431,6 +439,8 @@ export function PilotView({
     setScopes([])
     setPendingSync(null)
     setConfirmedRemoved([])
+    setPendingPlacementConfirmation(null)
+    setPhysicalPlacementChecked(false)
     setDeltaPage(0)
     setDeltaExpanded(false)
     setScopeTouched(false)
@@ -448,6 +458,8 @@ export function PilotView({
       const latestRevision = latest ? await api.revision(nextProjectId, latest.revision) : null
       if (version !== workflowVersion.current) return
       setProject(state)
+      setPendingPlacementConfirmation(null)
+      setPhysicalPlacementChecked(false)
       setRevision(latestRevision)
       setDeltaExpanded(
         Boolean(
@@ -558,7 +570,6 @@ export function PilotView({
       setPreparations({})
       setPrintRequests({})
       setPendingActivation(null)
-      setPhysicalPlacementConfirmed(false)
       setPendingSync(null)
       setConfirmedRemoved([])
       setDeltaPage(0)
@@ -699,7 +710,6 @@ export function PilotView({
         return next
       })
       setPendingActivation(null)
-      setPhysicalPlacementConfirmed(false)
     }
     setPrintRequests((current) => ({ ...current, [scope.key]: request }))
     setBusy(`prepare-${scope.key}`)
@@ -775,7 +785,7 @@ export function PilotView({
     const prepared = scopes
       .map((scope) => preparations[scope.key])
       .filter((value): value is PilotPrintPreparation => Boolean(value))
-    if (prepared.length === 0 || !physicalPlacementConfirmed) return
+    if (prepared.length === 0) return
     const request =
       retry && pendingActivation
         ? pendingActivation
@@ -784,15 +794,23 @@ export function PilotView({
             revision: revision.revision,
             expectedRevision: project.activeRevision,
             printRequestIds: prepared.map((item) => item.requestId),
-            physicalPlacementConfirmed: true as const,
+            physicalPlacementConfirmed: false as const,
           }
+    const version = workflowVersion.current
+    const requestedProjectId = projectId
     setPendingActivation(request)
     setBusy("activate")
     setNotice(null)
     try {
       await api.activate(projectId, request)
       const nextState = await api.project(projectId)
-      if (nextState.activeRevision !== revision.revision) {
+      if (version !== workflowVersion.current || requestedProjectId !== projectId) return
+      if (
+        nextState.activeRevision !== revision.revision ||
+        typeof nextState.physicalPlacementConfirmed !== "boolean" ||
+        !("boards" in nextState.activePlacement) ||
+        typeof nextState.activePlacementSha256 !== "string"
+      ) {
         throw new Error(
           "Die aktivierte Platzierung wurde nicht als aktiver Projektstand bestaetigt.",
         )
@@ -802,18 +820,74 @@ export function PilotView({
       setPreparations({})
       setPrintRequests({})
       setPendingActivation(null)
-      setPhysicalPlacementConfirmed(false)
+      setPendingPlacementConfirmation(null)
+      setPhysicalPlacementChecked(false)
       setScopeTouched(false)
       setNotice({
         tone: "success",
-        message: "Der bestaetigte Stand ist jetzt aktiv.",
+        message: pilotPhysicalPlacementConfirmed(nextState)
+          ? "Sollstand aktiv; die physische Belegung wurde bereits bestätigt."
+          : "Sollstand aktiv, physische Belegung noch unbestätigt.",
       })
     } catch (error) {
-      if (error instanceof PilotApiError && error.status === 409) invalidatePreparedPlacement()
+      if (version !== workflowVersion.current || requestedProjectId !== projectId) return
       setNotice(errorNotice(error))
       if (error instanceof PilotApiError && error.status === 401) setAuth("anonymous")
     } finally {
-      setBusy("")
+      if (version === workflowVersion.current && requestedProjectId === projectId) setBusy("")
+    }
+  }
+
+  const confirmPhysicalPlacement = async (retry = false) => {
+    if (
+      !project ||
+      !("boards" in project.activePlacement) ||
+      pilotPhysicalPlacementConfirmed(project) ||
+      !physicalPlacementChecked ||
+      typeof project.activePlacementSha256 !== "string"
+    ) {
+      return
+    }
+    const request =
+      retry && pendingPlacementConfirmation
+        ? pendingPlacementConfirmation
+        : {
+            requestId: createPilotRequestId("confirm-placement"),
+            expectedRevision: project.activePlacement.activeRevision,
+            placementSha256: project.activePlacementSha256,
+            physicalPlacementConfirmed: true as const,
+          }
+    const version = workflowVersion.current
+    const requestedProjectId = projectId
+    setPendingPlacementConfirmation(request)
+    setBusy("confirm-placement")
+    setNotice(null)
+    try {
+      const activePlacement = await api.confirmPhysicalPlacement(projectId, request)
+      const nextState = await api.project(requestedProjectId)
+      if (version !== workflowVersion.current || requestedProjectId !== projectId) return
+      if (
+        nextState.activeRevision !== request.expectedRevision ||
+        !pilotPhysicalPlacementConfirmed(nextState) ||
+        typeof nextState.activePlacementSha256 !== "string" ||
+        nextState.physicalPlacementConfirmation?.requestId !==
+          activePlacement.physicalPlacementConfirmation?.requestId
+      ) {
+        throw new Error("Die aktive Belegung hat sich geändert. Projekt bitte neu laden.")
+      }
+      setProject(nextState)
+      setPendingPlacementConfirmation(null)
+      setPhysicalPlacementChecked(false)
+      setNotice({
+        tone: "success",
+        message: "Physische Belegung bestätigt. Die reale Aufnahme ist jetzt erlaubt.",
+      })
+    } catch (error) {
+      if (version !== workflowVersion.current || requestedProjectId !== projectId) return
+      setNotice(errorNotice(error))
+      if (error instanceof PilotApiError && error.status === 401) setAuth("anonymous")
+    } finally {
+      if (version === workflowVersion.current && requestedProjectId === projectId) setBusy("")
     }
   }
 
@@ -828,7 +902,8 @@ export function PilotView({
     busy ||
     pendingSync ||
     pendingActivation ||
-    physicalPlacementConfirmed ||
+    pendingPlacementConfirmation ||
+    physicalPlacementChecked ||
     scopeTouched ||
     forecastTouched ||
     confirmedRemoved.length ||
@@ -869,6 +944,9 @@ export function PilotView({
   const deltaById = new Map(revision?.delta.map((item) => [item.sourcePlanCardId, item]))
   const cardsById = new Map(revision?.source.cards.map((card) => [card.sourcePlanCardId, card]))
   const activeCards = project ? pilotActiveCards(project) : new Map()
+  const activePlacement =
+    project && "boards" in project.activePlacement ? project.activePlacement : null
+  const activePlacementConfirmed = project ? pilotPhysicalPlacementConfirmed(project) : false
   const allAssigned = new Map<string, string>()
   for (const scope of scopes) for (const id of scope.cardIds) allAssigned.set(id, scope.key)
   const deltaCounts = Object.fromEntries(
@@ -1037,6 +1115,109 @@ export function PilotView({
           </div>
         </div>
       </section>
+
+      {activePlacement && (
+        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="brand-kicker text-xs font-semibold tracking-wider uppercase">
+                Aktiver Tafelsatz
+              </p>
+              <h2 className="mt-1 text-xl font-semibold">Gespeicherte Belegung</h2>
+              <p className="mt-1 text-sm text-slate-600">
+                Revision {activePlacement.activeRevision},{" "}
+                {Object.keys(activePlacement.boards).length} Tafeln,{" "}
+                {Object.values(activePlacement.boards).reduce(
+                  (count, board) => count + board.cards.length,
+                  0,
+                )}{" "}
+                Karten
+              </p>
+            </div>
+            <Badge
+              variant="outline"
+              className={
+                activePlacementConfirmed
+                  ? "border-emerald-300 bg-emerald-50 text-emerald-800"
+                  : "border-amber-300 bg-amber-50 text-amber-900"
+              }
+            >
+              {activePlacementConfirmed ? "Physisch bestätigt" : "Physisch unbestätigt"}
+            </Badge>
+          </div>
+          <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+            {Object.entries(activePlacement.boards).map(([boardId, board]) => (
+              <div
+                key={boardId}
+                className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm"
+              >
+                <strong className="block break-words">{boardId}</strong>
+                <span className="mt-1 block text-slate-600">
+                  {board.cards.length} Karten / Marker {board.boardMarkerId}
+                </span>
+              </div>
+            ))}
+          </div>
+          <p
+            className={`mt-4 rounded-lg border px-3 py-2 text-sm ${activePlacementConfirmed ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-amber-300 bg-amber-50 text-amber-950"}`}
+            role="status"
+          >
+            {activePlacementConfirmed
+              ? "Physische Belegung bestätigt. Eine reale Aufnahme darf diesen aktiven Tafelsatz erfassen."
+              : "Sollstand aktiv, physische Belegung noch unbestätigt. Eine reale Aufnahme ist erst nach der vollständigen Vor-Ort-Belegung und ihrer ausdrücklichen Bestätigung erlaubt."}
+          </p>
+          {!activePlacementConfirmed && (
+            <div className="mt-4 border-t border-slate-200 pt-4">
+              <h3 className="font-semibold">Physische Vor-Ort-Belegung bestätigen</h3>
+              <p className="mt-1 text-sm text-slate-600">
+                Diese Bestätigung gilt für den oben gespeicherten aktiven Tafelsatz, unabhängig von
+                einer bereits vorbereiteten neueren Revision.
+              </p>
+              <label className="mt-3 flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 text-sm">
+                <input
+                  className="brand-checkbox"
+                  type="checkbox"
+                  checked={physicalPlacementChecked}
+                  disabled={scopeLocked}
+                  onChange={(event) => {
+                    setPhysicalPlacementChecked(event.target.checked)
+                    setPendingPlacementConfirmation(null)
+                  }}
+                />
+                Der gesamte aktive Tafelsatz wurde vor Ort vollständig entsprechend dieser
+                gespeicherten Belegung gesteckt.
+              </label>
+              {typeof project?.activePlacementSha256 !== "string" && (
+                <p className="mt-2 text-sm text-amber-800" role="alert">
+                  Der aktive Tafelsatz besitzt noch keine belastbare Prüfsumme und kann nicht erneut
+                  bestätigt werden. Projekt bitte neu laden.
+                </p>
+              )}
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Button
+                  disabled={
+                    !physicalPlacementChecked ||
+                    typeof project?.activePlacementSha256 !== "string" ||
+                    scopeLocked
+                  }
+                  onClick={() => void confirmPhysicalPlacement()}
+                >
+                  <CheckCircle2 /> Physische Belegung bestätigen
+                </Button>
+                {pendingPlacementConfirmation && (
+                  <Button
+                    variant="outline"
+                    disabled={scopeLocked}
+                    onClick={() => void confirmPhysicalPlacement(true)}
+                  >
+                    <RotateCcw /> Bestätigung wiederholen
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+        </section>
+      )}
 
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -1728,30 +1909,14 @@ export function PilotView({
             <p className="brand-kicker text-xs font-semibold tracking-wider uppercase">
               03 / Abschluss
             </p>
-            <h3 className="mt-1 text-lg font-semibold">Tafeln bestaetigen</h3>
+            <h3 className="mt-1 text-lg font-semibold">Digitalen Tafelsatz aktivieren</h3>
             <p className="mt-1 text-sm text-slate-700">
-              Erst nach dem Drucken und physischen Umstecken bestaetigen. Nur dann kann der naechste
-              Stand vorhandene Karten und Tafelmarker sicher wiederverwenden.
+              Speichert die vorbereiteten Tafeln als neuen Sollstand. Die tatsächliche physische
+              Belegung wird anschließend getrennt am aktiven Tafelsatz bestätigt.
             </p>
-            <label className="brand-callout__control mt-4 flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border bg-white px-4 text-sm">
-              <input
-                className="brand-checkbox"
-                type="checkbox"
-                checked={physicalPlacementConfirmed}
-                disabled={scopeLocked}
-                onChange={(event) => {
-                  setPhysicalPlacementConfirmed(event.target.checked)
-                  setPendingActivation(null)
-                }}
-              />
-              Alle vorbereiteten Tafeln wurden entsprechend den Ausdrucken physisch gesteckt.
-            </label>
             <div className="mt-4 flex flex-wrap gap-2">
-              <Button
-                disabled={!physicalPlacementConfirmed || scopeLocked}
-                onClick={() => void activatePlacement()}
-              >
-                <CheckCircle2 /> Stand bestaetigen
+              <Button disabled={scopeLocked} onClick={() => void activatePlacement()}>
+                <CheckCircle2 /> Digitalen Tafelsatz aktivieren
               </Button>
               {pendingActivation && (
                 <Button
@@ -1759,7 +1924,7 @@ export function PilotView({
                   disabled={scopeLocked}
                   onClick={() => void activatePlacement(true)}
                 >
-                  <RotateCcw /> Bestaetigung wiederholen
+                  <RotateCcw /> Aktivierung wiederholen
                 </Button>
               )}
             </div>

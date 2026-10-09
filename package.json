@@ -23,6 +23,8 @@
     "target:assets:verify": "node scripts/verify-tag-only-assets.mjs",
     "pilot:assets": "node scripts/generate-pilot-assets.mjs",
     "pilot:assets:verify": "node scripts/verify-pilot-assets.mjs",
+    "pilot:print:merge": "tsx scripts/merge-pilot-print-pdfs.ts",
+    "pilot:print:package": "tsx scripts/generate-pilot-print-package.ts",
     "target:print": "tsx scripts/generate-tag-only-print.ts",
     "preview": "vite preview"
   },

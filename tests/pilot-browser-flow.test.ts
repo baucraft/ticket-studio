@@ -40,6 +40,7 @@ import {
   pilotCardsToPrint,
   pilotFacetOptions,
   pilotIsoWeek,
+  pilotPhysicalPlacementConfirmed,
 } from "@/lib/pilot-workflow"
 
 const PROJECT = "synthetic-project"
@@ -221,19 +222,45 @@ describe("pilot browser flow", () => {
         activeRevision: 0,
         synthetic: true,
         activePlacement: {},
+        physicalPlacementConfirmed: false,
+        activePlacementSha256: null,
+        physicalPlacementConfirmation: null,
         revisions: [],
       }),
       json(revision),
       json(preparation),
       json(preparation),
-      json({ activeRevision: 1, boards: { "kw-40-nord": preparation } }),
+      json({
+        activeRevision: 1,
+        boards: { "kw-40-nord": preparation },
+        physicalPlacementConfirmed: false,
+        physicalPlacementConfirmation: null,
+      }),
       json({
         profile: "pilot-product-v1",
         sourceProjectId: PROJECT,
         activeRevision: 1,
         synthetic: true,
-        activePlacement: { activeRevision: 1, boards: { "kw-40-nord": preparation } },
+        activePlacement: {
+          activeRevision: 1,
+          boards: { "kw-40-nord": preparation },
+          physicalPlacementConfirmed: false,
+          physicalPlacementConfirmation: null,
+        },
+        physicalPlacementConfirmed: false,
+        activePlacementSha256: "e".repeat(64),
+        physicalPlacementConfirmation: null,
         revisions: [{ revision: 1, predecessor: 0, blocked: false }],
+      }),
+      json({
+        activeRevision: 1,
+        boards: { "kw-40-nord": preparation },
+        physicalPlacementConfirmed: true,
+        physicalPlacementConfirmation: {
+          confirmedBy: "member-a",
+          confirmedAt: "2026-10-09T09:30:00.000Z",
+          requestId: "placement-stable",
+        },
       }),
     ]
     const api = new PilotApi(async (input, init) => {
@@ -331,10 +358,27 @@ describe("pilot browser flow", () => {
       revision: 1,
       expectedRevision: 0,
       printRequestIds: [preparation.requestId],
-      physicalPlacementConfirmed: true,
+      physicalPlacementConfirmed: false,
     })
     expect(activation.activeRevision).toBe(1)
-    expect(pilotActiveCards(await api.project(PROJECT)).size).toBe(6)
+    const activeProject = await api.project(PROJECT)
+    expect(pilotActiveCards(activeProject).size).toBe(6)
+    expect(pilotPhysicalPlacementConfirmed(activeProject)).toBe(false)
+    const confirmation = await api.confirmPhysicalPlacement(PROJECT, {
+      requestId: "placement-stable",
+      expectedRevision: activeProject.activeRevision,
+      placementSha256: activeProject.activePlacementSha256!,
+      physicalPlacementConfirmed: true,
+    })
+    expect(confirmation).toMatchObject({
+      activeRevision: 1,
+      physicalPlacementConfirmed: true,
+      physicalPlacementConfirmation: { requestId: "placement-stable" },
+    })
+    expect(JSON.parse(String(calls[6]?.init?.body))).toMatchObject({
+      physicalPlacementConfirmed: false,
+    })
+    expect(calls[8]?.url).toBe(`/api/pilot/v1/projects/${PROJECT}/physical-placement-confirmations`)
   }, 20_000)
 
   it.each([
@@ -344,6 +388,107 @@ describe("pilot browser flow", () => {
   ])("preserves HTTP %s and its stable error code", async (status, code) => {
     const api = new PilotApi(async () => json({ error: code }, status))
     await expect(api.session()).rejects.toMatchObject<Partial<PilotApiError>>({ status, code })
+  })
+
+  it("keeps an unconfirmed active revision across reload and confirms its hash instead of pending revision 4", async () => {
+    const activeRevisionTwo = {
+      ...preparation,
+      revision: 2,
+      revisionHash: "2".repeat(64),
+    }
+    const placementSha256 = "f".repeat(64)
+    const state = {
+      profile: "pilot-product-v1",
+      sourceProjectId: PROJECT,
+      activeRevision: 2,
+      synthetic: true,
+      activePlacement: {
+        activeRevision: 2,
+        boards: { [activeRevisionTwo.boardId]: activeRevisionTwo },
+        physicalPlacementConfirmed: false,
+        physicalPlacementConfirmation: null,
+      },
+      physicalPlacementConfirmed: false,
+      activePlacementSha256: placementSha256,
+      physicalPlacementConfirmation: null,
+      revisions: [
+        { revision: 2, predecessor: 1, blocked: false },
+        { revision: 4, predecessor: 3, blocked: false },
+      ],
+    }
+    const calls: Array<{ url: string; init?: RequestInit }> = []
+    const api = new PilotApi(async (input, init) => {
+      calls.push({ url: String(input), init })
+      if (!init?.body) return json(state)
+      return json({
+        ...state.activePlacement,
+        physicalPlacementConfirmed: true,
+        physicalPlacementConfirmation: {
+          confirmedBy: "member-a",
+          confirmedAt: "2026-10-09T10:00:00Z",
+          requestId: "confirm-active-two",
+        },
+      })
+    })
+
+    const firstLoad = await api.project(PROJECT)
+    const reloaded = await api.project(PROJECT)
+    expect(pilotPhysicalPlacementConfirmed(firstLoad)).toBe(false)
+    expect(pilotPhysicalPlacementConfirmed(reloaded)).toBe(false)
+    expect(reloaded.revisions.at(-1)?.revision).toBe(4)
+    await api.confirmPhysicalPlacement(PROJECT, {
+      requestId: "confirm-active-two",
+      expectedRevision: reloaded.activeRevision,
+      placementSha256: reloaded.activePlacementSha256!,
+      physicalPlacementConfirmed: true,
+    })
+    expect(JSON.parse(String(calls[2]?.init?.body))).toEqual({
+      requestId: "confirm-active-two",
+      expectedRevision: 2,
+      placementSha256,
+      physicalPlacementConfirmed: true,
+    })
+  })
+
+  it("preserves legacy confirmed state but never turns an explicit false into true", async () => {
+    const base = {
+      profile: "pilot-product-v1",
+      sourceProjectId: PROJECT,
+      activeRevision: 1,
+      synthetic: true,
+      activePlacement: { activeRevision: 1, boards: { [preparation.boardId]: preparation } },
+      revisions: [{ revision: 1, predecessor: 0, blocked: false }],
+    }
+    const responses = [json(base), json({ ...base, physicalPlacementConfirmed: false })]
+    const api = new PilotApi(async () => responses.shift()!)
+    expect(pilotPhysicalPlacementConfirmed(await api.project(PROJECT))).toBe(true)
+    expect(pilotPhysicalPlacementConfirmed(await api.project(PROJECT))).toBe(false)
+  })
+
+  it("retries a stale physical confirmation byte-for-byte without print or activation workarounds", async () => {
+    const calls: Array<{ url: string; body: string }> = []
+    const api = new PilotApi(async (input, init) => {
+      calls.push({ url: String(input), body: String(init?.body) })
+      return json({ error: "placement_conflict" }, 409)
+    })
+    const request = {
+      requestId: "confirm-retry",
+      expectedRevision: 2,
+      placementSha256: "f".repeat(64),
+      physicalPlacementConfirmed: true as const,
+    }
+
+    await expect(api.confirmPhysicalPlacement(PROJECT, request)).rejects.toMatchObject({
+      status: 409,
+      code: "placement_conflict",
+    })
+    await expect(api.confirmPhysicalPlacement(PROJECT, request)).rejects.toMatchObject({
+      status: 409,
+      code: "placement_conflict",
+    })
+    expect(calls).toHaveLength(2)
+    expect(calls[0]?.body).toBe(calls[1]?.body)
+    expect(calls.every((call) => call.url.endsWith("/physical-placement-confirmations"))).toBe(true)
   })
 
   it("fails closed for cards outside the bound preparation and text that does not fit", async () => {
