@@ -84,10 +84,17 @@ export type PilotProjectState = {
   sourceProjectName?: string | null
   activeRevision: number
   synthetic: boolean
-  activePlacement:
-    | Record<string, never>
-    | { activeRevision: number; boards: Record<string, PilotPrintPreparation> }
+  activePlacement: Record<string, never> | PilotActivation
+  physicalPlacementConfirmed?: boolean
+  activePlacementSha256?: string | null
+  physicalPlacementConfirmation?: PilotPhysicalPlacementConfirmation | null
   revisions: Array<{ revision: number; predecessor: number; blocked: boolean }>
+}
+
+export type PilotPhysicalPlacementConfirmation = {
+  confirmedBy: string
+  confirmedAt: string
+  requestId: string
 }
 
 export type PilotSyncRequest = {
@@ -110,12 +117,21 @@ export type PilotActivateRequest = {
   revision: number
   expectedRevision: number
   printRequestIds: string[]
-  physicalPlacementConfirmed: true
+  physicalPlacementConfirmed: false
 }
 
 export type PilotActivation = {
   activeRevision: number
   boards: Record<string, PilotPrintPreparation>
+  physicalPlacementConfirmed?: boolean
+  physicalPlacementConfirmation?: PilotPhysicalPlacementConfirmation | null
+}
+
+export type PilotPhysicalPlacementConfirmationRequest = {
+  requestId: string
+  expectedRevision: number
+  placementSha256: string
+  physicalPlacementConfirmed: true
 }
 
 export class PilotApiError extends Error {
@@ -173,6 +189,57 @@ function optionalTradeColor(value: unknown): string | null {
   const parsed = string(value)
   if (!/^#[0-9a-f]{6}$/.test(parsed)) throw new PilotApiError(0, "invalid_api_response")
   return parsed
+}
+
+function optionalBoolean(value: unknown): boolean | undefined {
+  return value === undefined ? undefined : boolean(value)
+}
+
+function sha256(value: unknown): string {
+  const parsed = string(value)
+  if (!/^[0-9a-f]{64}$/.test(parsed)) throw new PilotApiError(0, "invalid_api_response")
+  return parsed
+}
+
+function optionalPlacementSha256(value: unknown): string | null | undefined {
+  if (value === undefined) return undefined
+  return value === null ? null : sha256(value)
+}
+
+function placementConfirmation(value: unknown): PilotPhysicalPlacementConfirmation {
+  const source = object(value)
+  const confirmedAt = string(source.confirmedAt)
+  if (!/^\d{4}-\d{2}-\d{2}T/.test(confirmedAt) || Number.isNaN(Date.parse(confirmedAt))) {
+    throw new PilotApiError(0, "invalid_api_response")
+  }
+  return {
+    confirmedBy: string(source.confirmedBy),
+    confirmedAt,
+    requestId: string(source.requestId),
+  }
+}
+
+function optionalPlacementConfirmation(
+  value: unknown,
+): PilotPhysicalPlacementConfirmation | null | undefined {
+  if (value === undefined || value === null) return value
+  return placementConfirmation(value)
+}
+
+function sameConfirmation(
+  left: PilotPhysicalPlacementConfirmation | null | undefined,
+  right: PilotPhysicalPlacementConfirmation | null | undefined,
+) {
+  return (
+    left === right ||
+    (left !== null &&
+      left !== undefined &&
+      right !== null &&
+      right !== undefined &&
+      left.confirmedBy === right.confirmedBy &&
+      left.confirmedAt === right.confirmedAt &&
+      left.requestId === right.requestId)
+  )
 }
 
 function planCard(value: unknown): PilotPlanCard {
@@ -299,12 +366,31 @@ function parseProjectState(value: unknown): PilotProjectState {
     throw new PilotApiError(0, "invalid_api_response")
   }
   const activePlacement = object(source.activePlacement)
+  const projectConfirmed = optionalBoolean(source.physicalPlacementConfirmed)
+  const projectConfirmation = optionalPlacementConfirmation(source.physicalPlacementConfirmation)
+  const activePlacementSha256 = optionalPlacementSha256(source.activePlacementSha256)
   let parsedPlacement: PilotProjectState["activePlacement"] = {}
   if (Object.keys(activePlacement).length > 0) {
     const boards = object(activePlacement.boards)
+    const placementConfirmed = optionalBoolean(activePlacement.physicalPlacementConfirmed)
+    const placementConfirmationMetadata = optionalPlacementConfirmation(
+      activePlacement.physicalPlacementConfirmation,
+    )
+    const effectiveConfirmed = projectConfirmed ?? placementConfirmed
+    const effectiveConfirmation = projectConfirmation ?? placementConfirmationMetadata
     if (
       activePlacement.activeRevision !== source.activeRevision ||
-      Object.keys(boards).length === 0
+      Object.keys(boards).length === 0 ||
+      (projectConfirmed !== undefined &&
+        placementConfirmed !== undefined &&
+        projectConfirmed !== placementConfirmed) ||
+      (projectConfirmation !== undefined &&
+        placementConfirmationMetadata !== undefined &&
+        !sameConfirmation(projectConfirmation, placementConfirmationMetadata)) ||
+      (projectConfirmed === false && projectConfirmation != null) ||
+      (placementConfirmed === false && placementConfirmationMetadata != null) ||
+      (effectiveConfirmed === false && effectiveConfirmation != null) ||
+      activePlacementSha256 === null
     ) {
       throw new PilotApiError(0, "invalid_api_response")
     }
@@ -322,7 +408,19 @@ function parseProjectState(value: unknown): PilotProjectState {
           return [boardId, parsed]
         }),
       ),
+      ...(placementConfirmed !== undefined
+        ? { physicalPlacementConfirmed: placementConfirmed }
+        : {}),
+      ...(placementConfirmationMetadata !== undefined
+        ? { physicalPlacementConfirmation: placementConfirmationMetadata }
+        : {}),
     }
+  } else if (
+    projectConfirmed === true ||
+    projectConfirmation != null ||
+    (activePlacementSha256 !== undefined && activePlacementSha256 !== null)
+  ) {
+    throw new PilotApiError(0, "invalid_api_response")
   }
   return {
     profile: "pilot-product-v1",
@@ -331,6 +429,11 @@ function parseProjectState(value: unknown): PilotProjectState {
     activeRevision: integer(source.activeRevision),
     synthetic: boolean(source.synthetic),
     activePlacement: parsedPlacement,
+    ...(projectConfirmed !== undefined ? { physicalPlacementConfirmed: projectConfirmed } : {}),
+    ...(activePlacementSha256 !== undefined ? { activePlacementSha256 } : {}),
+    ...(projectConfirmation !== undefined
+      ? { physicalPlacementConfirmation: projectConfirmation }
+      : {}),
     revisions: source.revisions.map((entry) => {
       const item = object(entry)
       return {
@@ -342,7 +445,9 @@ function parseProjectState(value: unknown): PilotProjectState {
   }
 }
 
-export function createPilotRequestId(action: "sync" | "print" | "activate"): string {
+export function createPilotRequestId(
+  action: "sync" | "print" | "activate" | "confirm-placement",
+): string {
   return `studio-${action}-${crypto.randomUUID()}`
 }
 
@@ -470,7 +575,11 @@ export class PilotApi {
       }),
     )
     const boards = object(payload.boards)
-    const result = {
+    const physicalPlacementConfirmed = optionalBoolean(payload.physicalPlacementConfirmed)
+    const physicalPlacementConfirmation = optionalPlacementConfirmation(
+      payload.physicalPlacementConfirmation,
+    )
+    const result: PilotActivation = {
       activeRevision: integer(payload.activeRevision),
       boards: Object.fromEntries(
         Object.entries(boards).map(([boardId, value]) => {
@@ -485,14 +594,64 @@ export class PilotApi {
           return [boardId, preparation]
         }),
       ),
+      ...(physicalPlacementConfirmed !== undefined ? { physicalPlacementConfirmed } : {}),
+      ...(physicalPlacementConfirmation !== undefined ? { physicalPlacementConfirmation } : {}),
     }
-    if (result.activeRevision !== request.revision) {
+    if (
+      result.activeRevision !== request.revision ||
+      Object.keys(result.boards).length === 0 ||
+      physicalPlacementConfirmed === true ||
+      physicalPlacementConfirmation != null
+    ) {
       throw new PilotApiError(0, "invalid_api_response")
     }
     const responseRequestIds = Object.values(result.boards).map((item) => item.requestId)
     if (
       responseRequestIds.length !== request.printRequestIds.length ||
       request.printRequestIds.some((requestId) => !responseRequestIds.includes(requestId))
+    ) {
+      throw new PilotApiError(0, "invalid_api_response")
+    }
+    return result
+  }
+
+  async confirmPhysicalPlacement(
+    sourceProjectId: string,
+    request: PilotPhysicalPlacementConfirmationRequest,
+  ): Promise<PilotActivation> {
+    const payload = object(
+      await this.call(
+        `/projects/${encodeURIComponent(sourceProjectId)}/physical-placement-confirmations`,
+        {
+          method: "POST",
+          body: JSON.stringify(request),
+        },
+      ),
+    )
+    const boards = object(payload.boards)
+    const result: PilotActivation = {
+      activeRevision: integer(payload.activeRevision),
+      boards: Object.fromEntries(
+        Object.entries(boards).map(([boardId, value]) => {
+          const preparation = parsePilotPrintPreparation(value)
+          if (
+            preparation.boardId !== boardId ||
+            preparation.sourceProjectId !== sourceProjectId ||
+            preparation.revision !== request.expectedRevision
+          ) {
+            throw new PilotApiError(0, "invalid_api_response")
+          }
+          return [boardId, preparation]
+        }),
+      ),
+      physicalPlacementConfirmed: boolean(payload.physicalPlacementConfirmed),
+      physicalPlacementConfirmation: placementConfirmation(payload.physicalPlacementConfirmation),
+    }
+    if (
+      result.activeRevision !== request.expectedRevision ||
+      Object.keys(result.boards).length === 0 ||
+      result.physicalPlacementConfirmed !== true ||
+      result.physicalPlacementConfirmation?.requestId !== request.requestId
     ) {
       throw new PilotApiError(0, "invalid_api_response")
     }
