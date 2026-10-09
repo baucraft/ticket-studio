@@ -20,7 +20,7 @@ function canonical(value: unknown): string {
   }
   if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`
   return `{${Object.entries(value as Record<string, unknown>)
-    .sort(([left], [right]) => left.localeCompare(right))
+    .sort(([left], [right]) => (left < right ? -1 : left > right ? 1 : 0))
     .map(([key, item]) => `${JSON.stringify(key)}:${canonical(item)}`)
     .join(",")}}`
 }
@@ -250,6 +250,69 @@ describe("pilot print merge", () => {
         allocation: { ...contract.allocation, witness: { count: 0, hash: "a".repeat(64) } },
       }),
     ).rejects.toThrow("Witness")
+  })
+
+  it("selects exact card identities even when their displayed area paths collide", async () => {
+    const selection = {
+      schema: "pilot-print-card-selection-v1",
+      sourceProjectId: "project-a",
+      forecastStart: contract.forecastStart,
+      forecastEnd: contract.forecastEnd,
+      mode: "source-card-ids",
+      revisionHash,
+      processSha256: "a".repeat(64),
+      cardSha256: "b".repeat(64),
+      areaScopeSha256: "c".repeat(64),
+      sourcePlanCardIds: ["card-a"],
+    }
+    const exactRevision = {
+      ...revision,
+      source: {
+        ...revision.source,
+        processSha256: selection.processSha256,
+        cardSha256: selection.cardSha256,
+        cards: revision.source.cards.map((card) => ({ ...card, area: "EA / Same display" })),
+      },
+    }
+    const exactHash = createHash("sha256").update(canonical(exactRevision)).digest("hex")
+    const pdf = await printPdf([{ id: "card-a", active: 1000, done: 1001 }])
+    const doc = await PDFDocument.load(pdf)
+    doc.getPage(0).node.set(PDFName.of("PilotRevisionHash"), PDFHexString.fromText(exactHash))
+    const bytes = await doc.save()
+    const lines = new TextDecoder().decode(contract.allocation.journal).trim().split("\n")
+    const event = JSON.parse(lines[1]!)
+    event.job.revisionHash = exactHash
+    const allocation = {
+      journal: new TextEncoder().encode(`${lines[0]}\n${canonical(event)}\n`),
+      witness: { count: 1, hash: createHash("sha256").update(canonical(event)).digest("hex") },
+    }
+    const exactContract = {
+      ...contract,
+      revision: exactRevision,
+      selection: { ...selection, revisionHash: exactHash },
+      allocation,
+    }
+    const result = await mergePilotPrintPdfs([{ name: "exact.pdf", bytes }], exactContract)
+    expect(result.manifest.pageCount).toBe(1)
+    expect(result.manifest.fullForecastCardCount).toBe(2)
+    expect(result.manifest.selection.mode).toBe("source-card-ids")
+    for (const bad of [
+      { revisionHash },
+      { cardSha256: "d".repeat(64) },
+      { sourceProjectId: "another-project" },
+      { sourcePlanCardIds: ["card-a", "card-a"] },
+      { sourcePlanCardIds: ["card-a", "missing-card"] },
+    ]) {
+      await expect(
+        mergePilotPrintPdfs([{ name: "exact.pdf", bytes }], {
+          ...exactContract,
+          selection: { ...exactContract.selection, ...bad },
+        }),
+      ).rejects.toThrow()
+    }
+    await expect(
+      mergePilotPrintPdfs([{ name: "wrong.pdf", bytes: pdf }], exactContract),
+    ).rejects.toThrow("Revisionsstand")
   })
 
   it("rejects a modified preparation before rendering any PDF", async () => {

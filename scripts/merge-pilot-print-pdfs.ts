@@ -72,6 +72,41 @@ function assertContract(contract: MergeContract) {
 function printSelection(contract: MergeContract, sourceProjectId: string) {
   if (contract.selection === undefined) return { mode: "all", areaPaths: [] as string[] }
   const selection = record(contract.selection, "Bereichsauswahl")
+  if (selection.schema === "pilot-print-card-selection-v1") {
+    const source = record(record(contract.revision, "Donnerstagrevision").source, "Revisionsquelle")
+    if (
+      selection.sourceProjectId !== sourceProjectId ||
+      selection.forecastStart !== contract.forecastStart ||
+      selection.forecastEnd !== contract.forecastEnd ||
+      selection.mode !== "source-card-ids" ||
+      selection.revisionHash !== sha256(canonical(contract.revision)) ||
+      typeof selection.processSha256 !== "string" ||
+      !/^[0-9a-f]{64}$/.test(selection.processSha256) ||
+      typeof selection.cardSha256 !== "string" ||
+      !/^[0-9a-f]{64}$/.test(selection.cardSha256) ||
+      selection.processSha256 !== source.processSha256 ||
+      selection.cardSha256 !== source.cardSha256 ||
+      typeof selection.areaScopeSha256 !== "string" ||
+      !/^[0-9a-f]{64}$/.test(selection.areaScopeSha256) ||
+      !Array.isArray(selection.sourcePlanCardIds) ||
+      !selection.sourcePlanCardIds.length
+    ) {
+      throw new Error("Die Karten-ID-Auswahl passt nicht zu Projekt, Quelle und finaler Revision.")
+    }
+    const sourcePlanCardIds = selection.sourcePlanCardIds.map((value) => text(value, "Karten-ID"))
+    if (
+      new Set(sourcePlanCardIds).size !== sourcePlanCardIds.length ||
+      sourcePlanCardIds.some((value) => value.trim() !== value)
+    ) {
+      throw new Error("Die Karten-ID-Auswahl enthaelt doppelte oder ungueltige IDs.")
+    }
+    return {
+      mode: "source-card-ids",
+      areaPaths: [] as string[],
+      sourcePlanCardIds,
+      areaScopeSha256: selection.areaScopeSha256,
+    }
+  }
   if (
     selection.schema !== "pilot-print-selection-v1" ||
     selection.sourceProjectId !== sourceProjectId ||
@@ -121,6 +156,7 @@ export function pilotPrintExpectation(contract: MergeContract) {
   const cards = new Map<string, string>()
   const allSourceIds = new Set<string>()
   const matchedAreas = new Set<string>()
+  const selectedIds = new Set(selection.sourcePlanCardIds ?? [])
   let fullForecastCardCount = 0
   for (const raw of source.cards) {
     const card = record(raw, "Revisionskarte")
@@ -137,6 +173,7 @@ export function pilotPrintExpectation(contract: MergeContract) {
       )
       matches.forEach((prefix) => matchedAreas.add(prefix))
       if (selection.mode === "areas" && !matches.length) continue
+      if (selection.mode === "source-card-ids" && !selectedIds.has(id)) continue
       if (!["new", "changed", "unchanged"].includes(delta.get(id) ?? "")) {
         throw new Error("Eine Forecastkarte ist nicht druckbar oder muss manuell geklaert werden.")
       }
@@ -147,6 +184,9 @@ export function pilotPrintExpectation(contract: MergeContract) {
     throw new Error(
       "Ein ausgewaehlter Bereich fehlt im finalen Forecast; Auswahl erneut bestaetigen.",
     )
+  }
+  if (selection.mode === "source-card-ids" && cards.size !== selectedIds.size) {
+    throw new Error("Eine ausgewaehlte Karten-ID fehlt im finalen druckbaren Forecast.")
   }
   if (cards.size === 0) throw new Error("Die Donnerstagrevision enthaelt keine Forecastkarten.")
   return {
